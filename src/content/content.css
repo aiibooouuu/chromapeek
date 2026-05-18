@@ -1,0 +1,153 @@
+/* ChromaPeek Content Script Styles */
+
+#chromapeek-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  z-index: 999999 !important;
+  background: transparent !important;
+  box-shadow: 0 0 0 1px rgba(240, 235, 216, 0.5);
+  transition: all 0.1s ease;
+}
+
+#chromapeek-overlay::after {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 0;
+  background: #0d1321;
+  color: #f0ebd8;
+  padding: 2px 6px;
+  font-size: 11px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+#chromapeek-highlight {
+  position: fixed !important;
+  border: 2px solid #00d4ff !important;
+  background: rgba(0, 212, 255, 0.1) !important;
+  pointer-events: none !important;
+  z-index: 999998 !important;
+  box-sizing: border-box !important;
+  transition: all 0.1s ease !important;
+}
+
+#chromapeek-tooltip {
+  position: absolute !important;
+  background: #1a1a1a !important;
+  color: white !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  max-width: 300px !important;
+  z-index: 1000000 !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  transition: opacity 0.2s ease !important;
+}
+
+#chromapeek-tooltip.visible {
+  opacity: 1 !important;
+}
+
+/* Prevent conflicts with page styles */
+#chromapeek-overlay *,
+#chromapeek-tooltip *,
+#chromapeek-highlight * {
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: none !important;
+  color: inherit !important;
+  font: inherit !important;
+  text-decoration: none !important;
+  vertical-align: baseline !important;
+}
+
+/* Cursor styles */
+body.chromapeek-active {
+  cursor: crosshair !important;
+}
+
+body.chromapeek-active * {
+  cursor: crosshair !important;
+}
+
+/* Notification styles */
+.chromapeek-notification {
+  position: fixed !important;
+  top: 20px !important;
+  right: 20px !important;
+  background: #00d4ff !important;
+  color: white !important;
+  padding: 12px 16px !important;
+  border-radius: 6px !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  z-index: 1000001 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  animation: chromapeek-slide-in 0.3s ease-out !important;
+}
+
+@keyframes chromapeek-slide-in {
+  from {
+    transform: translateX(100%) !important;
+    opacity: 0 !important;
+  }
+  to {
+    transform: translateX(0) !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Selection overlay */
+.chromapeek-selection-overlay {
+  position: fixed !important;
+  background: rgba(0, 212, 255, 0.2) !important;
+  border: 2px solid #00d4ff !important;
+  pointer-events: none !important;
+  z-index: 999997 !important;
+  transition: all 0.1s ease !important;
+}
+
+/* Measurement lines */
+.chromapeek-measurement {
+  position: fixed !important;
+  background: #ff4757 !important;
+  pointer-events: none !important;
+  z-index: 999996 !important;
+}
+
+.chromapeek-measurement.horizontal {
+  height: 1px !important;
+}
+
+.chromapeek-measurement.vertical {
+  width: 1px !important;
+}
+
+/* Color picker overlay */
+.chromapeek-color-picker {
+  position: fixed !important;
+  width: 20px !important;
+  height: 20px !important;
+  border: 2px solid white !important;
+  border-radius: 50% !important;
+  pointer-events: none !important;
+  z-index: 1000002 !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Hide default browser tooltip */
+[title]:hover::after {
+  display: none !important;
+}

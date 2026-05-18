@@ -1,0 +1,314 @@
+.chromapeek-app {
+  min-width: 350px;
+  min-height: 500px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0d1321;
+  color: #f0ebd8;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #1d2d44;
+  background: #0d1321;
+  color: #f0ebd8;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.scan-btn {
+  background: rgba(240, 235, 216, 0.1);
+  border: 1px solid rgba(240, 235, 216, 0.2);
+  color: #f0ebd8;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.scan-btn:hover {
+  background: rgba(240, 235, 216, 0.2);
+  border-color: rgba(240, 235, 216, 0.3);
+}
+
+.scan-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.scan-btn.scanning {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.tab-nav {
+  display: flex;
+  background: #1d2d44;
+  border-bottom: 1px solid #0d1321;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: rgba(240, 235, 216, 0.7);
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background: rgba(240, 235, 216, 0.1);
+  color: #f0ebd8;
+}
+
+.tab-btn.active {
+  background: #0d1321;
+  color: #f0ebd8;
+  border-bottom: 2px solid #f0ebd8;
+}
+
+.app-content {
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #f0ebd8;
+}
+
+.export-btn, .copy-btn {
+  background: #1d2d44;
+  color: #f0ebd8;
+  border: 1px solid rgba(240, 235, 216, 0.2);
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.export-btn:hover, .copy-btn:hover {
+  background: rgba(240, 235, 216, 0.1);
+  border-color: rgba(240, 235, 216, 0.4);
+}
+
+.color-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.color-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid #1d2d44;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(29, 45, 68, 0.3);
+}
+
+.color-item:hover {
+  border-color: #f0ebd8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  background: rgba(29, 45, 68, 0.5);
+}
+
+.color-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  border: 1px solid #1d2d44;
+  cursor: pointer;
+}
+
+.color-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.color-hex {
+  font-weight: 600;
+  font-size: 14px;
+  color: #f0ebd8;
+}
+
+.color-rgb {
+  font-size: 12px;
+  color: rgba(240, 235, 216, 0.7);
+}
+
+.fonts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.font-item {
+  padding: 12px;
+  border: 1px solid #1d2d44;
+  border-radius: 6px;
+  background: rgba(29, 45, 68, 0.3);
+}
+
+.font-family {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #f0ebd8;
+}
+
+.font-details {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: rgba(240, 235, 216, 0.7);
+}
+
+.images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+.image-item {
+  border: 1px solid #1d2d44;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(29, 45, 68, 0.3);
+}
+
+.image-item img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+}
+
+.image-actions {
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.image-actions button {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid #1d2d44;
+  background: #0d1321;
+  color: #f0ebd8;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s ease;
+}
+
+.image-actions button:hover {
+  background: #1d2d44;
+  border-color: #f0ebd8;
+}
+
+.text-area {
+  width: 100%;
+  height: 200px;
+  padding: 12px;
+  border: 1px solid #1d2d44;
+  border-radius: 6px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  background: rgba(29, 45, 68, 0.3);
+  color: #f0ebd8;
+}
+
+.text-area:focus {
+  outline: none;
+  border-color: #f0ebd8;
+}
+
+.empty-state {
+  text-align: center;
+  color: rgba(240, 235, 216, 0.6);
+  font-style: italic;
+  margin: 40px 0;
+}
+
+/* Custom scrollbar for dark theme */
+.app-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.app-content::-webkit-scrollbar-track {
+  background: #0d1321;
+}
+
+.app-content::-webkit-scrollbar-thumb {
+  background: #1d2d44;
+  border-radius: 4px;
+}
+
+.app-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(240, 235, 216, 0.3);
+}
+
+/* Remove default Vite styles */
+#root {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  background: #0d1321;
+}
+
+.logo {
+  display: none;
+}
+
+.card {
+  display: none;
+}
+
+.read-the-docs {
+  display: none;
+}
+
+/* Additional dark mode improvements */
+.text-area::placeholder {
+  color: rgba(240, 235, 216, 0.5);
+}
+
+.font-item:hover {
+  background: rgba(29, 45, 68, 0.5);
+  border-color: rgba(240, 235, 216, 0.3);
+}
+
+.image-item:hover {
+  border-color: rgba(240, 235, 216, 0.5);
+}

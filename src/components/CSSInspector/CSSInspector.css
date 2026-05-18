@@ -1,0 +1,311 @@
+/* CSSInspector Component Styles */
+
+.css-inspector {
+  width: 100%;
+}
+
+.element-info {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.element-selector {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  font-size: 14px;
+  margin-bottom: 8px;
+  word-break: break-all;
+}
+
+.tag {
+  color: #e83e8c;
+  font-weight: 600;
+}
+
+.id {
+  color: #007bff;
+  font-weight: 500;
+}
+
+.classes {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.element-dimensions {
+  font-size: 12px;
+  color: #6c757d;
+  margin-bottom: 4px;
+}
+
+.element-text {
+  font-size: 11px;
+  color: #6c757d;
+  font-style: italic;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.css-properties {
+  margin-bottom: 16px;
+}
+
+.properties-section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #495057;
+  margin: 0 0 8px 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.properties-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.properties-list.compact {
+  gap: 4px;
+}
+
+.property-item {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  padding: 8px 12px;
+  transition: border-color 0.2s ease;
+}
+
+.property-item:hover {
+  border-color: #667eea;
+}
+
+.property-item.compact {
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.property-label {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 4px;
+}
+
+.property-item.compact .property-label {
+  margin-bottom: 0;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.property-value {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  font-size: 11px;
+  color: #6c757d;
+}
+
+.property-item.compact .property-value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.property-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.value-text {
+  flex: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+}
+
+.value-text:hover {
+  background-color: #f8f9fa;
+}
+
+.copy-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 10px;
+  opacity: 0.6;
+  padding: 2px 4px;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.copy-btn:hover {
+  opacity: 1;
+  background-color: #f8f9fa;
+}
+
+.property-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.property-edit input {
+  flex: 1;
+  border: 1px solid #667eea;
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  font-size: 11px;
+  outline: none;
+}
+
+.property-edit input:focus {
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.property-edit .btn {
+  min-width: auto;
+  padding: 4px 8px;
+  font-size: 10px;
+}
+
+.inspector-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* Color property previews */
+.property-item[data-property="color"] .value-text::before,
+.property-item[data-property="backgroundColor"] .value-text::before,
+.property-item[data-property="borderColor"] .value-text::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* Font property styling */
+.property-item[data-property="fontFamily"] .value-text {
+  font-family: inherit;
+  font-weight: normal;
+}
+
+.property-item[data-property="fontSize"] .value-text,
+.property-item[data-property="fontWeight"] .value-text {
+  font-weight: 600;
+}
+
+/* Dimension properties */
+.property-item[data-property*="width"] .value-text,
+.property-item[data-property*="height"] .value-text,
+.property-item[data-property*="margin"] .value-text,
+.property-item[data-property*="padding"] .value-text {
+  color: #007bff;
+  font-weight: 500;
+}
+
+/* Border properties */
+.property-item[data-property*="border"] .value-text {
+  color: #e83e8c;
+}
+
+/* Position properties */
+.property-item[data-property="position"] .value-text,
+.property-item[data-property="display"] .value-text {
+  color: #28a745;
+  font-weight: 500;
+}
+
+/* CSS value suggestions */
+.css-suggestions {
+  position: absolute;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  max-height: 120px;
+  overflow-y: auto;
+  z-index: 1000;
+  min-width: 120px;
+}
+
+.css-suggestion {
+  padding: 6px 8px;
+  cursor: pointer;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  font-size: 11px;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.css-suggestion:hover,
+.css-suggestion.selected {
+  background-color: #667eea;
+  color: white;
+}
+
+.css-suggestion:last-child {
+  border-bottom: none;
+}
+
+/* Property groups */
+.property-group {
+  margin-bottom: 16px;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.property-group-header {
+  background: #f8f9fa;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 1px solid #e9ecef;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.property-group-header:hover {
+  background: #e9ecef;
+}
+
+.property-group-content {
+  padding: 8px;
+}
+
+.property-group-toggle {
+  font-size: 10px;
+  transition: transform 0.2s ease;
+}
+
+.property-group.collapsed .property-group-toggle {
+  transform: rotate(-90deg);
+}
+
+.property-group.collapsed .property-group-content {
+  display: none;
+}
