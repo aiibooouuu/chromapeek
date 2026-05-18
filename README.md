@@ -41,7 +41,21 @@ chromapeek/
 ├── manifest.json
 └── package.json
 ```
+# ChromaPeek
 
+## Screenshots
+
+### Color Extraction
+![Color Extraction](./screenshots/colors.png)
+
+### Font Detection
+![Font Detection](./screenshots/fonts.png)
+
+### Image Extraction
+![Image Extraction](./screenshots/images.png)
+
+### Text Extraction
+![Text Extraction](./screenshots/text.png)
 ## Contributing
 
 Contributions are welcome! Feel free to submit issues or pull requests.
