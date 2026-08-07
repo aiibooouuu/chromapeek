@@ -1,11 +1,14 @@
 .popup {
-  width: 380px;
-  min-height: 600px;
+  width:380px;
+  height:600px;
   display: flex;
   flex-direction: column;
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
 }
 
 .popup-header {
@@ -84,11 +87,12 @@
 }
 
 .popup-tabs {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  overflow: hidden;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+  scrollbar-width: none;
 }
 
 .popup-tabs::-webkit-scrollbar {
@@ -96,14 +100,15 @@
 }
 
 .tab {
-  width: 100%;
-  min-width: 105px;
+  flex: 1;
+  min-width: 0;
+  width: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 14px 6px;
+  padding: 14px 8px;
   background: transparent;
   border: none;
   color: var(--text-secondary);
@@ -111,6 +116,7 @@
 }
 
 .tab svg {
+  color: var(--text-secondary);
   transition: all 0.25s ease;
 }
 
@@ -125,6 +131,7 @@
 }
 
 .tab:hover svg {
+  color: var(--text-secondary);
   transform: translateY(-1px);
 }
 
@@ -135,6 +142,7 @@
 }
 
 .tab.active svg {
+  color: var(--text-secondary);
   transform: scale(1.05);
 }
 
@@ -146,10 +154,11 @@
   scrollbar-width: thin;
   scrollbar-color: #232935 transparent;
   background: var(--bg);
+  min-height:0;
 }
 
 .popup-content::-webkit-scrollbar {
-  width: 6px;
+  display: none;
 }
 
 .popup-content::-webkit-scrollbar-track {

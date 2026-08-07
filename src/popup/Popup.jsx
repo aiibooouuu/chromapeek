@@ -6,19 +6,19 @@ import {
   FaImages,
   FaChartPie,
   FaGear,
+  FaMagnifyingGlass,
+  FaRotateRight,
+  FaWandMagicSparkles,
 } from "react-icons/fa6";
 
 import ColorPalette from "../components/ColorPalette/ColorPalette";
 import FontInspector from "../components/FontInspector/FontInspector";
-import CSSInspector from "../components/CSSInspector/CSSInspector";
 import ImageExtractor from "../components/ImageExtractor/ImageExtractor";
-import TextExtractor from "../components/TextExtractor/TextExtractor";
 import Overview from "../components/Overview/Overview";
 import Settings from "../components/Settings/Settings";
 import "./Popup.css";
 
 const Popup = () => {
-  const [activeTab, setActiveTab] = useState("inspector");
   const [pageData, setPageData] = useState(null);
   const [selectedElement, setSelectedElement] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -117,19 +117,6 @@ const tabs = [
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "inspector":
-        return (
-          <CSSInspector
-            selectedElement={selectedElement}
-            onPropertyChange={(property, value) => {
-              chrome.runtime.sendMessage({
-                type: "UPDATE_CSS",
-                property,
-                value,
-              });
-            }}
-          />
-        );
 
       case "colors":
         return (
@@ -197,7 +184,7 @@ const tabs = [
         <div className="brand">
 
           <div className="brand-logo">
-            <Sparkles size={18} strokeWidth={2.2} />
+            <FaWandMagicSparkles size={18} strokeWidth={2.2} />
           </div>
 
           <div className="brand-info">
@@ -223,7 +210,7 @@ const tabs = [
           disabled={isLoading}
         >
 
-          <Search size={18} />
+          <FaMagnifyingGlass size={18} />
 
           {isLoading
             ? "Scanning Current Page..."
@@ -235,7 +222,7 @@ const tabs = [
           className="secondary-btn"
           onClick={startInspector}
         >
-          <ScanSearch size={16} />
+          <FaCrosshairs size={16} />
           Live Inspect
         </button>
 
@@ -353,7 +340,7 @@ const tabs = [
             onClick={scanCurrentPage}
           >
 
-            <RefreshCw size={15} />
+            <FaRotateRight size={15} />
 
             Refresh
 
