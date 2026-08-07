@@ -1,141 +1,193 @@
-import React, { useState, useEffect } from 'react';
-import ColorPalette from '../components/ColorPalette/ColorPalette';
-import FontInspector from '../components/FontInspector/FontInspector';
-import CSSInspector from '../components/CSSInspector/CSSInspector';
-import ImageExtractor from '../components/ImageExtractor/ImageExtractor';
-import TextExtractor from '../components/TextExtractor/TextExtractor';
-import './Popup.css';
+import React, { useState, useEffect } from "react";
+import {
+  Palette,
+  Type,
+  Image,
+  FileText,
+  ScanSearch,
+  Search,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
+
+import ColorPalette from "../components/ColorPalette/ColorPalette";
+import FontInspector from "../components/FontInspector/FontInspector";
+import CSSInspector from "../components/CSSInspector/CSSInspector";
+import ImageExtractor from "../components/ImageExtractor/ImageExtractor";
+import TextExtractor from "../components/TextExtractor/TextExtractor";
+
+import "./Popup.css";
 
 const Popup = () => {
-  const [activeTab, setActiveTab] = useState('inspector');
+  const [activeTab, setActiveTab] = useState("inspector");
   const [pageData, setPageData] = useState(null);
   const [selectedElement, setSelectedElement] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    loadPageData();
-    
-    // Listen for element selection from content script
-    chrome.runtime.onMessage.addListener((message) => {
-      if (message.type === 'ELEMENT_SELECTED') {
+    scanCurrentPage();
+
+    const listener = (message) => {
+      if (message.type === "ELEMENT_SELECTED") {
         setSelectedElement(message.data);
-        setActiveTab('inspector');
+        setActiveTab("inspector");
       }
-    });
+    };
+
+    chrome.runtime.onMessage.addListener(listener);
+
+    return () => {
+      chrome.runtime.onMessage.removeListener(listener);
+    };
   }, []);
 
-  const loadPageData = async () => {
+  const scanCurrentPage = async () => {
     setIsLoading(true);
+
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      
-      const response = await chrome.runtime.sendMessage({
-        type: 'GET_PAGE_DATA'
+      await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
       });
-      
+
+      const response = await chrome.runtime.sendMessage({
+        type: "GET_PAGE_DATA",
+      });
+
       if (response && !response.error) {
         setPageData(response);
       }
     } catch (error) {
-      console.error('Failed to load page data:', error);
+      console.error("Failed to scan page:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const extractColors = async () => {
+  const extractPageColors = async () => {
     setIsLoading(true);
+
     try {
       const response = await chrome.runtime.sendMessage({
-        type: 'EXTRACT_COLORS'
+        type: "EXTRACT_COLORS",
       });
-      
-      if (response && response.colors) {
-        setPageData(prev => ({
+
+      if (response?.colors) {
+        setPageData((prev) => ({
           ...prev,
-          colors: response.colors
+          colors: response.colors,
         }));
       }
     } catch (error) {
-      console.error('Failed to extract colors:', error);
+      console.error("Failed to extract colors:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const activateInspection = async () => {
+  const startInspector = async () => {
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+
       await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
+        target: {
+          tabId: tab.id,
+        },
         function: () => {
-          if (typeof window.initializeChromaPeek === 'function') {
+          if (typeof window.initializeChromaPeek === "function") {
             window.initializeChromaPeek();
           }
-        }
+        },
       });
     } catch (error) {
-      console.error('Failed to activate inspection:', error);
+      console.error("Failed to activate inspector:", error);
     }
   };
 
   const tabs = [
-    { id: 'inspector', label: 'Inspector', icon: '🔍' },
-    { id: 'colors', label: 'Colors', icon: '🎨' },
-    { id: 'fonts', label: 'Fonts', icon: '🔤' },
-    { id: 'images', label: 'Images', icon: '🖼️' },
-    { id: 'text', label: 'Text', icon: '📝' }
+    {
+      id: "inspector",
+      label: "Inspector",
+      icon: ScanSearch,
+    },
+    {
+      id: "colors",
+      label: "Colors",
+      icon: Palette,
+    },
+    {
+      id: "fonts",
+      label: "Fonts",
+      icon: Type,
+    },
+    {
+      id: "images",
+      label: "Images",
+      icon: Image,
+    },
+    {
+      id: "text",
+      label: "Text",
+      icon: FileText,
+    },
   ];
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'inspector':
+      case "inspector":
         return (
-          <CSSInspector 
+          <CSSInspector
             selectedElement={selectedElement}
             onPropertyChange={(property, value) => {
               chrome.runtime.sendMessage({
-                type: 'UPDATE_CSS',
+                type: "UPDATE_CSS",
                 property,
-                value
+                value,
               });
             }}
           />
         );
-      case 'colors':
+
+      case "colors":
         return (
-          <ColorPalette 
+          <ColorPalette
             colors={pageData?.colors || []}
-            onExtractColors={extractColors}
+            onExtractColors={extractPageColors}
             isLoading={isLoading}
           />
         );
-      case 'fonts':
+
+      case "fonts":
         return (
-          <FontInspector 
+          <FontInspector
             selectedElement={selectedElement}
             pageData={pageData}
           />
         );
-      case 'images':
+
+      case "images":
         return (
-          <ImageExtractor 
+          <ImageExtractor
             images={pageData?.images || []}
             onDownload={(imageUrl) => {
               chrome.runtime.sendMessage({
-                type: 'DOWNLOAD_IMAGE',
-                imageUrl
+                type: "DOWNLOAD_IMAGE",
+                imageUrl,
               });
             }}
           />
         );
-      case 'text':
+
+      case "text":
         return (
-          <TextExtractor 
+          <TextExtractor
             textElements={pageData?.text || []}
           />
         );
+
       default:
         return null;
     }
@@ -143,53 +195,182 @@ const Popup = () => {
 
   return (
     <div className="popup">
+
+      {/* ==========================
+          Header
+      =========================== */}
+
       <header className="popup-header">
-        <div className="popup-title">
-          <span className="popup-icon">👁️</span>
-          <h1>ChromaPeek</h1>
+
+        <div className="brand">
+
+          <div className="brand-logo">
+            <Sparkles size={18} strokeWidth={2.2} />
+          </div>
+
+          <div className="brand-info">
+            <h1>ChromaPeek</h1>
+            <p>Visual Intelligence Toolkit</p>
+          </div>
+
         </div>
-        <button 
-          className="inspect-btn"
-          onClick={activateInspection}
-          title="Activate inspection mode"
-        >
-          <span>🎯</span>
-          Inspect
-        </button>
+
       </header>
 
+      {/* ==========================
+          Scan Section
+      =========================== */}
+
+      <section className="scan-section">
+
+        <button
+          className={`primary-btn scan-btn ${
+            isLoading ? "scanning" : ""
+          }`}
+          onClick={scanCurrentPage}
+          disabled={isLoading}
+        >
+
+          <Search size={18} />
+
+          {isLoading
+            ? "Scanning Current Page..."
+            : "Scan Current Page"}
+
+        </button>
+
+        <button
+          className="secondary-btn"
+          onClick={startInspector}
+        >
+          <ScanSearch size={16} />
+          Live Inspect
+        </button>
+
+      </section>
+
+      {/* ==========================
+          Navigation
+      =========================== */}
+
       <nav className="popup-tabs">
-        {tabs.map(tab => (
+
+        {tabs.map(({ id, label, icon: Icon }) => (
+
           <button
-            key={tab.id}
-            className={`tab ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
+            key={id}
+            className={`tab ${
+              activeTab === id ? "active" : ""
+            }`}
+            onClick={() => setActiveTab(id)}
           >
-            <span className="tab-icon">{tab.icon}</span>
-            <span className="tab-label">{tab.label}</span>
+
+            <Icon
+              size={17}
+              strokeWidth={2}
+            />
+
+            <span>{label}</span>
+
           </button>
+
         ))}
+
       </nav>
 
+      {/* ==========================
+          Main Content
+      =========================== */}
+
       <main className="popup-content">
+
         {isLoading ? (
+
           <div className="loading">
-            <div className="loading-spinner"></div>
-            <p>Loading...</p>
+
+            <div className="loading-spinner" />
+
+            <h3>Scanning page...</h3>
+
+            <p>
+              Extracting colors, fonts,
+              images and page content.
+            </p>
+
           </div>
-        ) : (
+
+        ) : pageData ? (
+
           renderTabContent()
+
+        ) : (
+
+          <div className="empty-state">
+
+            <Search
+              size={42}
+              strokeWidth={1.8}
+            />
+
+            <h3>Ready to Inspect</h3>
+
+            <p>
+              Scan the current webpage to
+              discover its colors, typography,
+              images and visual styles.
+            </p>
+
+            <button
+              className="primary-btn"
+              onClick={scanCurrentPage}
+            >
+              <Search size={16} />
+              Scan Current Page
+            </button>
+
+          </div>
+
         )}
+
       </main>
 
+      {/* ==========================
+          Footer
+      =========================== */}
+
       <footer className="popup-footer">
-        <button onClick={loadPageData} className="refresh-btn">
-          🔄 Refresh
-        </button>
-        <span className="page-info">
-          {pageData?.title ? pageData.title.substring(0, 30) + '...' : 'No page data'}
-        </span>
+
+        <div className="page-details">
+
+          <span className="page-title">
+
+            {pageData?.title
+              ? pageData.title.length > 38
+                ? pageData.title.substring(0, 38) + "..."
+                : pageData.title
+              : "No page scanned"}
+
+          </span>
+
+        </div>
+
+        <div className="footer-actions">
+
+          <button
+            className="secondary-btn"
+            onClick={scanCurrentPage}
+          >
+
+            <RefreshCw size={15} />
+
+            Refresh
+
+          </button>
+
+        </div>
+
       </footer>
+
     </div>
   );
 };
