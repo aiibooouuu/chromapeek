@@ -26,6 +26,10 @@ const Popup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
+  const [isInspecting, setIsInspecting] = useState(false);
+  const [lastScannedAt, setLastScannedAt] = useState(null);
+  const [pageHost, setPageHost] = useState(null);
+
   const getActiveTab = async () => {
     const [tab] = await chrome.tabs.query({
       active: true,
@@ -39,18 +43,43 @@ const Popup = () => {
     return tab;
   };
 
+  // Self-healing message sender: if the content script hasn't been
+  // injected yet (e.g. page loaded before the extension, or a
+  // navigation happened), inject it on the fly and retry once.
+  const sendToTab = async (tabId, message) => {
+    try {
+      return await chrome.tabs.sendMessage(tabId, message);
+    } catch (error) {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ["content.js"],
+      });
+
+      return await chrome.tabs.sendMessage(tabId, message);
+    }
+  };
+
+  const sendMessage = async (type, payload = {}) => {
+    const tab = await getActiveTab();
+    return sendToTab(tab.id, { type, ...payload });
+  };
+
   const scanCurrentPage = async () => {
     setIsLoading(true);
 
     try {
       const tab = await getActiveTab();
-
-      const response = await chrome.tabs.sendMessage(tab.id, {
-        type: "GET_PAGE_DATA",
-      });
+      const response = await sendToTab(tab.id, { type: "GET_PAGE_DATA" });
 
       if (response && !response.error) {
         setPageData(response);
+        setLastScannedAt(new Date());
+
+        try {
+          setPageHost(new URL(tab.url).hostname);
+        } catch {
+          setPageHost(tab.url || null);
+        }
       } else {
         console.error("Failed to scan page:", response?.error);
       }
@@ -62,8 +91,8 @@ const Popup = () => {
   };
 
   useEffect(() => {
-    scanCurrentPage();
-
+    // No auto-scan on open — scanning only happens when the user
+    // presses "Scan Current Page".
     const listener = (message) => {
       if (message?.type === "ELEMENT_SELECTED") {
         setSelectedElement(message.data);
@@ -82,11 +111,7 @@ const Popup = () => {
     setIsLoading(true);
 
     try {
-      const tab = await getActiveTab();
-
-      const response = await chrome.tabs.sendMessage(tab.id, {
-        type: "EXTRACT_COLORS",
-      });
+      const response = await sendMessage("EXTRACT_COLORS");
 
       if (response?.colors) {
         setPageData((prev) => ({
@@ -103,16 +128,14 @@ const Popup = () => {
     }
   };
 
-  const startInspector = async () => {
-    try {
-      const tab = await getActiveTab();
+  const toggleInspector = async () => {
+    const next = !isInspecting;
 
-      await chrome.tabs.sendMessage(tab.id, {
-        type: "TOGGLE_INSPECTION",
-        enabled: true,
-      });
+    try {
+      await sendMessage("TOGGLE_INSPECTION", { enabled: next });
+      setIsInspecting(next);
     } catch (error) {
-      console.error("Failed to activate inspector:", error);
+      console.error("Failed to toggle inspector:", error);
     }
   };
 
@@ -186,22 +209,6 @@ const Popup = () => {
         </div>
       </header>
 
-      <section className="scan-section">
-        <button
-          className={`primary-btn scan-btn ${isLoading ? "scanning" : ""}`}
-          onClick={scanCurrentPage}
-          disabled={isLoading}
-        >
-          <FaMagnifyingGlass size={18} />
-          {isLoading ? "Scanning Current Page..." : "Scan Current Page"}
-        </button>
-
-        <button className="secondary-btn" onClick={startInspector}>
-          <FaCrosshairs size={16} />
-          Live Inspect
-        </button>
-      </section>
-
       <nav className="popup-tabs">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
@@ -215,6 +222,25 @@ const Popup = () => {
         ))}
       </nav>
 
+      <section className="scan-section">
+        <button
+          className={`primary-btn scan-btn ${isLoading ? "scanning" : ""}`}
+          onClick={scanCurrentPage}
+          disabled={isLoading}
+        >
+          <FaMagnifyingGlass size={18} />
+          {isLoading ? "Scanning Current Page..." : "Scan Current Page"}
+        </button>
+{/* 
+        <button
+          className={`secondary-btn ${isInspecting ? "active" : ""}`}
+          onClick={toggleInspector}
+        >
+          <FaCrosshairs size={16} />
+          {isInspecting ? "Stop Inspect" : "Start Inspect"}
+        </button> */}
+      </section>
+
       <main className="popup-content">
         {isLoading ? (
           <div className="loading">
@@ -227,29 +253,28 @@ const Popup = () => {
         ) : (
           <div className="empty-state">
             <FaMagnifyingGlass size={42} strokeWidth={1.8} />
-            <h3>Ready to Inspect</h3>
-            <p>
-              Scan the current webpage to discover its colors, typography,
-              images and visual styles.
-            </p>
-
-            <button className="primary-btn" onClick={scanCurrentPage}>
-              <FaMagnifyingGlass size={16} />
-              Scan Current Page
-            </button>
+            <h3>No page scanned yet.</h3>
+            <p>Click &quot;Scan Current Page&quot;</p>
           </div>
         )}
       </main>
 
       <footer className="popup-footer">
         <div className="page-details">
-          <span className="page-title">
-            {pageData?.title
-              ? pageData.title.length > 38
-                ? `${pageData.title.substring(0, 38)}...`
-                : pageData.title
-              : "No page scanned"}
-          </span>
+          {pageHost ? (
+            <>
+              <span className="page-title">{pageHost}</span>
+              <span className="page-meta">
+                Last scanned:{" "}
+                {lastScannedAt?.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            </>
+          ) : (
+            <span className="page-title">No page scanned</span>
+          )}
         </div>
 
         <div className="footer-actions">

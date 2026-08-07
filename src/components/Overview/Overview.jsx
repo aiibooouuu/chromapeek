@@ -38,7 +38,7 @@ const Overview = ({ pageData = null }) => {
 
   return (
     <div className="overview">
-      <div className="overview-header">
+      {/* <div className="overview-header">
         <div>
           <h2>Overview</h2>
           <p>Quick summary of the current webpage.</p>
@@ -48,7 +48,7 @@ const Overview = ({ pageData = null }) => {
           <FileDown size={16} />
           Export
         </button>
-      </div>
+      </div> */}
 
       {!hasData ? (
         <div className="overview-empty">

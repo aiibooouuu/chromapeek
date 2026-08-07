@@ -1,14 +1,11 @@
 .popup {
-  width:380px;
-  height:600px;
+  width: 380px;
+  height: 600px;
   display: flex;
   flex-direction: column;
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
 }
 
 .popup-header {
@@ -118,6 +115,21 @@
   white-space: nowrap;
   color: var(--text-secondary);
   font-size: 12px;
+}
+
+.page-meta {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.secondary-btn.active {
+  border-color: var(--teal);
+  color: var(--teal);
 }
 
 .footer-actions {
@@ -230,12 +242,12 @@
 
 .tab {
   flex: 0 0 auto;
-  min-width: 90px;
+  min-width: 72px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 12px;
+  padding: 8px;
   background: transparent;
   color: var(--text-secondary);
   border: 1px solid transparent;

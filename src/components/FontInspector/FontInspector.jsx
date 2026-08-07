@@ -107,7 +107,7 @@ color: ${fontInfo.color};`
   if (!fontInfo) {
     return (
       <div className="font-inspector">
-        <div className="font-header">
+        {/* <div className="font-header">
           <div>
             <h2>Typography</h2>
             <p>Inspect the typography of any selected element.</p>
@@ -121,7 +121,7 @@ color: ${fontInfo.color};`
             Start Live Inspect and select any text element to analyze its
             typography.
           </p>
-        </div>
+        </div> */}
 
         <div className="page-fonts">
           <div className="section-header">
