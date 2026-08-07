@@ -42,6 +42,17 @@ function init() {
   }
 }
 
+function getSelector(element) {
+  const tag = element.tagName.toLowerCase();
+  const id = element.id ? `#${element.id}` : "";
+  const classes =
+    typeof element.className === "string" && element.className.trim()
+      ? `.${element.className.trim().split(/\s+/).join(".")}`
+      : "";
+
+  return `${tag}${id}${classes}`;
+}
+
 function extractColors() {
   const colors = new Set();
   const elements = document.querySelectorAll("*");
@@ -74,9 +85,7 @@ function extractFonts() {
     const styles = window.getComputedStyle(element);
     const family = styles.fontFamily;
 
-    if (!family || family === "inherit") {
-      return;
-    }
+    if (!family || family === "inherit") return;
 
     const fontKey = family.replace(/['"]/g, "");
     if (!fonts.has(fontKey)) {
@@ -140,9 +149,7 @@ function extractButtons() {
       element.getAttribute("aria-label") ||
       "";
 
-    if (!text) {
-      return;
-    }
+    if (!text) return;
 
     buttons.push({
       text,
@@ -162,9 +169,7 @@ function extractLinks() {
 
   linkElements.forEach((element) => {
     const href = element.href || "";
-    if (!href.startsWith("http")) {
-      return;
-    }
+    if (!href.startsWith("http")) return;
 
     links.push({
       text: element.textContent?.trim() || element.getAttribute("aria-label") || href,
@@ -206,6 +211,7 @@ function extractAccessibility() {
 
 function extractCssSnapshot() {
   const bodyStyles = window.getComputedStyle(document.body);
+
   return {
     body: {
       backgroundColor: bodyStyles.backgroundColor,
@@ -233,16 +239,6 @@ function buildPageData() {
     css: extractCssSnapshot(),
     accessibility: extractAccessibility(),
   };
-}
-
-function getSelector(element) {
-  const tag = element.tagName.toLowerCase();
-  const id = element.id ? `#${element.id}` : "";
-  const classes =
-    typeof element.className === "string" && element.className.trim()
-      ? `.${element.className.trim().split(/\s+/).join(".")}`
-      : "";
-  return `${tag}${id}${classes}`;
 }
 
 function describeElement(element) {
@@ -334,16 +330,23 @@ function toggleInspection(enable) {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "extractData") {
+  if (request?.type === "GET_PAGE_DATA" || request?.action === "extractData") {
     sendResponse(buildPageData());
     return true;
   }
 
-  if (request.action === "toggleInspection") {
+  if (request?.type === "EXTRACT_COLORS") {
+    sendResponse({ colors: extractColors() });
+    return true;
+  }
+
+  if (request?.type === "TOGGLE_INSPECTION" || request?.action === "toggleInspection") {
     toggleInspection(Boolean(request.enabled));
     sendResponse({ success: true });
     return true;
   }
+
+  return false;
 });
 
 window.initializeChromaPeek = () => toggleInspection(true);

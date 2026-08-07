@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { Search } from "lucide-react";
 import {
-  FaCrosshairs,
   FaPalette,
   FaFont,
   FaImages,
@@ -9,6 +9,7 @@ import {
   FaMagnifyingGlass,
   FaRotateRight,
   FaWandMagicSparkles,
+  FaFileLines,
 } from "react-icons/fa6";
 
 import ColorPalette from "../components/ColorPalette/ColorPalette";
@@ -16,20 +17,20 @@ import FontInspector from "../components/FontInspector/FontInspector";
 import ImageExtractor from "../components/ImageExtractor/ImageExtractor";
 import Overview from "../components/Overview/Overview";
 import Settings from "../components/Settings/Settings";
+import TextExtractor from "../components/TextExtractor/TextExtractor";
 import "./Popup.css";
 
 const Popup = () => {
   const [pageData, setPageData] = useState(null);
   const [selectedElement, setSelectedElement] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
-    scanCurrentPage();
-
     const listener = (message) => {
-      if (message.type === "ELEMENT_SELECTED") {
+      if (message?.type === "ELEMENT_SELECTED") {
         setSelectedElement(message.data);
-        setActiveTab("inspector");
+        setActiveTab("fonts");
       }
     };
 
@@ -44,12 +45,16 @@ const Popup = () => {
     setIsLoading(true);
 
     try {
-      await chrome.tabs.query({
+      const [tab] = await chrome.tabs.query({
         active: true,
         currentWindow: true,
       });
 
-      const response = await chrome.runtime.sendMessage({
+      if (!tab?.id) {
+        throw new Error("No active tab found");
+      }
+
+      const response = await chrome.tabs.sendMessage(tab.id, {
         type: "GET_PAGE_DATA",
       });
 
@@ -67,13 +72,22 @@ const Popup = () => {
     setIsLoading(true);
 
     try {
-      const response = await chrome.runtime.sendMessage({
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+
+      if (!tab?.id) {
+        throw new Error("No active tab found");
+      }
+
+      const response = await chrome.tabs.sendMessage(tab.id, {
         type: "EXTRACT_COLORS",
       });
 
       if (response?.colors) {
         setPageData((prev) => ({
-          ...prev,
+          ...(prev || {}),
           colors: response.colors,
         }));
       }
@@ -91,32 +105,32 @@ const Popup = () => {
         currentWindow: true,
       });
 
-      await chrome.scripting.executeScript({
-        target: {
-          tabId: tab.id,
-        },
-        function: () => {
-          if (typeof window.initializeChromaPeek === "function") {
-            window.initializeChromaPeek();
-          }
-        },
+      if (!tab?.id) {
+        throw new Error("No active tab found");
+      }
+
+      await chrome.tabs.sendMessage(tab.id, {
+        type: "TOGGLE_INSPECTION",
+        enabled: true,
       });
     } catch (error) {
       console.error("Failed to activate inspector:", error);
     }
   };
 
-const tabs = [
-  { id: "inspector", label: "Inspect", icon: FaCrosshairs },
-  { id: "colors", label: "Palette", icon: FaPalette },
-  { id: "fonts", label: "Typography", icon: FaFont },
-  { id: "images", label: "Assets", icon: FaImages },
-  { id: "overview", label: "Overview", icon: FaChartPie },
-  { id: "settings", label: "Settings", icon: FaGear },
-];
+  const tabs = [
+    { id: "overview", label: "Overview", icon: FaChartPie },
+    { id: "colors", label: "Palette", icon: FaPalette },
+    { id: "fonts", label: "Typography", icon: FaFont },
+    { id: "images", label: "Assets", icon: FaImages },
+    { id: "text", label: "Text", icon: FaFileLines },
+    { id: "settings", label: "Settings", icon: FaGear },
+  ];
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case "overview":
+        return <Overview pageData={pageData} />;
 
       case "colors":
         return (
@@ -149,23 +163,10 @@ const tabs = [
         );
 
       case "text":
-        return (
-          <TextExtractor
-            textElements={pageData?.text || []}
-          />
-        );
-      
-      case "overview":
-      return (
-        <Overview
-          pageData={pageData}
-        />
-      );
+        return <TextExtractor textElements={pageData?.text || []} />;
 
       case "settings":
-        return (
-          <Settings />
-        );
+        return <Settings />;
 
       default:
         return null;
@@ -174,15 +175,8 @@ const tabs = [
 
   return (
     <div className="popup">
-
-      {/* ==========================
-          Header
-      =========================== */}
-
       <header className="popup-header">
-
         <div className="brand">
-
           <div className="brand-logo">
             <FaWandMagicSparkles size={18} strokeWidth={2.2} />
           </div>
@@ -191,165 +185,86 @@ const tabs = [
             <h1>ChromaPeek</h1>
             <p>Visual Intelligence Toolkit</p>
           </div>
-
         </div>
-
       </header>
 
-      {/* ==========================
-          Scan Section
-      =========================== */}
-
       <section className="scan-section">
-
         <button
-          className={`primary-btn scan-btn ${
-            isLoading ? "scanning" : ""
-          }`}
+          className={`primary-btn scan-btn ${isLoading ? "scanning" : ""}`}
           onClick={scanCurrentPage}
           disabled={isLoading}
         >
-
           <FaMagnifyingGlass size={18} />
-
-          {isLoading
-            ? "Scanning Current Page..."
-            : "Scan Current Page"}
-
+          {isLoading ? "Scanning Current Page..." : "Scan Current Page"}
         </button>
 
-        <button
-          className="secondary-btn"
-          onClick={startInspector}
-        >
-          <FaCrosshairs size={16} />
+        <button className="secondary-btn" onClick={startInspector}>
+          <FaFileLines size={16} />
           Live Inspect
         </button>
-
       </section>
 
-      {/* ==========================
-          Navigation
-      =========================== */}
-
       <nav className="popup-tabs">
-
         {tabs.map(({ id, label, icon: Icon }) => (
-
           <button
             key={id}
-            className={`tab ${
-              activeTab === id ? "active" : ""
-            }`}
+            className={`tab ${activeTab === id ? "active" : ""}`}
             onClick={() => setActiveTab(id)}
           >
-
-            <Icon
-              size={17}
-              strokeWidth={2}
-            />
-
+            <Icon size={17} strokeWidth={2} />
             <span>{label}</span>
-
           </button>
-
         ))}
-
       </nav>
 
-      {/* ==========================
-          Main Content
-      =========================== */}
-
       <main className="popup-content">
-
         {isLoading ? (
-
           <div className="loading">
-
             <div className="loading-spinner" />
-
             <h3>Scanning page...</h3>
-
-            <p>
-              Extracting colors, fonts,
-              images and page content.
-            </p>
-
+            <p>Extracting colors, fonts, images and page content.</p>
           </div>
-
         ) : pageData ? (
-
           renderTabContent()
-
         ) : (
-
           <div className="empty-state">
-
-            <Search
-              size={42}
-              strokeWidth={1.8}
-            />
-
+            <Search size={42} strokeWidth={1.8} />
             <h3>Ready to Inspect</h3>
-
             <p>
-              Scan the current webpage to
-              discover its colors, typography,
+              Scan the current webpage to discover its colors, typography,
               images and visual styles.
             </p>
 
-            <button
-              className="primary-btn"
-              onClick={scanCurrentPage}
-            >
+            <button className="primary-btn" onClick={scanCurrentPage}>
               <Search size={16} />
               Scan Current Page
             </button>
-
           </div>
-
         )}
-
       </main>
 
-      {/* ==========================
-          Footer
-      =========================== */}
-
       <footer className="popup-footer">
-
         <div className="page-details">
-
           <span className="page-title">
-
             {pageData?.title
               ? pageData.title.length > 38
                 ? pageData.title.substring(0, 38) + "..."
                 : pageData.title
               : "No page scanned"}
-
           </span>
-
         </div>
 
         <div className="footer-actions">
-
           <button
             className="secondary-btn"
             onClick={scanCurrentPage}
+            disabled={isLoading}
           >
-
             <FaRotateRight size={15} />
-
             Refresh
-
           </button>
-
         </div>
-
       </footer>
-
     </div>
   );
 };

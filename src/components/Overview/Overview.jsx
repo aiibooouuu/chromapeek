@@ -13,7 +13,9 @@ const getHostname = (value) => {
   }
 };
 
-const Overview = ({ pageData = {} }) => {
+const Overview = ({ pageData = null }) => {
+  const hasData = Boolean(pageData);
+
   const {
     title = "",
     url = "",
@@ -21,17 +23,17 @@ const Overview = ({ pageData = {} }) => {
     fonts = [],
     images = [],
     text = "",
-  } = pageData;
+  } = pageData || {};
 
   const displayTitle = title.trim() || getHostname(url);
   const displayUrl = url || "No URL captured";
   const textBlocks = text ? text.split(/\n\s*\n/).filter(Boolean).length : 0;
 
   const cards = [
-    { icon: Palette, label: "Colors", value: colors.length, accent: "teal" },
-    { icon: Type, label: "Fonts", value: fonts.length, accent: "gold" },
-    { icon: Image, label: "Images", value: images.length, accent: "teal" },
-    { icon: Type, label: "Text", value: textBlocks, accent: "gold" },
+    { icon: Palette, label: "Colors", value: hasData ? colors.length : "—", accent: "teal" },
+    { icon: Type, label: "Fonts", value: hasData ? fonts.length : "—", accent: "gold" },
+    { icon: Image, label: "Images", value: hasData ? images.length : "—", accent: "teal" },
+    { icon: Type, label: "Text", value: hasData ? textBlocks : "—", accent: "gold" },
   ];
 
   return (
@@ -42,34 +44,47 @@ const Overview = ({ pageData = {} }) => {
           <p>Quick summary of the current webpage.</p>
         </div>
 
-        <button className="secondary-btn">
+        <button className="secondary-btn" disabled={!hasData}>
           <FileDown size={16} />
           Export
         </button>
       </div>
 
-      <div className="website-card">
-        <div className="website-icon">
-          <Globe size={22} />
+      {!hasData ? (
+        <div className="overview-empty">
+          <Globe size={42} />
+          <h3>Scan to get started</h3>
+          <p>
+            Run a scan to populate colors, fonts, images, and extracted text for
+            the current page.
+          </p>
         </div>
-
-        <div className="website-info">
-          <h3>{displayTitle}</h3>
-          <span className="mono">{displayUrl}</span>
-        </div>
-      </div>
-
-      <div className="overview-grid">
-        {cards.map(({ icon: Icon, label, value, accent }) => (
-          <div key={label} className={`overview-card ${accent}`}>
-            <div className="card-top">
-              <Icon size={18} />
-              <span>{label}</span>
+      ) : (
+        <>
+          <div className="website-card">
+            <div className="website-icon">
+              <Globe size={22} />
             </div>
-            <h3>{value}</h3>
+
+            <div className="website-info">
+              <h3>{displayTitle}</h3>
+              <span className="mono">{displayUrl}</span>
+            </div>
           </div>
-        ))}
-      </div>
+
+          <div className="overview-grid">
+            {cards.map(({ icon: Icon, label, value, accent }) => (
+              <div key={label} className={`overview-card ${accent}`}>
+                <div className="card-top">
+                  <Icon size={18} />
+                  <span>{label}</span>
+                </div>
+                <h3>{value}</h3>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };
