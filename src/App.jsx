@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  FaCrosshairs,
   FaPalette,
   FaFont,
   FaImages,
@@ -13,23 +12,17 @@ import "./App.css";
 
 import ColorPalette from "./components/ColorPalette/ColorPalette";
 import FontInspector from "./components/FontInspector/FontInspector";
-import CSSInspector from "./components/CSSInspector/CSSInspector";
 import ImageExtractor from "./components/ImageExtractor/ImageExtractor";
 import Overview from "./components/Overview/Overview";
 import Settings from "./components/Settings/Settings";
 
 const EMPTY_PAGE_DATA = {
+  title: "",
+  url: "",
   colors: [],
   fonts: [],
   images: [],
   text: "",
-  buttons: [],
-  links: [],
-  headings: [],
-  css: {},
-  accessibility: {},
-  title: "",
-  url: "",
 };
 
 const normalizePageData = (data = {}) => ({
@@ -39,41 +32,15 @@ const normalizePageData = (data = {}) => ({
   fonts: Array.isArray(data.fonts) ? data.fonts : [],
   images: Array.isArray(data.images) ? data.images : [],
   text: typeof data.text === "string" ? data.text : "",
-  buttons: Array.isArray(data.buttons) ? data.buttons : [],
-  links: Array.isArray(data.links) ? data.links : [],
-  headings: Array.isArray(data.headings) ? data.headings : [],
-  css: data.css && typeof data.css === "object" ? data.css : {},
-  accessibility:
-    data.accessibility && typeof data.accessibility === "object"
-      ? data.accessibility
-      : {},
 });
 
 function App() {
   const [activeTab, setActiveTab] = useState("overview");
   const [pageData, setPageData] = useState(EMPTY_PAGE_DATA);
-  const [selectedElement, setSelectedElement] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
     loadPageData();
-
-    const listener = (message) => {
-      if (message?.type === "ELEMENT_SELECTED") {
-        setSelectedElement(message.data ?? null);
-        setActiveTab("inspect");
-      }
-
-      if (message?.type === "PAGE_DATA_UPDATED") {
-        setPageData(normalizePageData(message.data));
-      }
-    };
-
-    chrome.runtime.onMessage.addListener(listener);
-
-    return () => {
-      chrome.runtime.onMessage.removeListener(listener);
-    };
   }, []);
 
   const loadPageData = async () => {
@@ -83,8 +50,8 @@ function App() {
       if (result.extractedData) {
         setPageData(normalizePageData(result.extractedData));
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -109,47 +76,30 @@ function App() {
         throw new Error("No scan data returned from content script");
       }
 
-      const normalized = normalizePageData(response);
+      const normalized = normalizePageData({
+        ...response,
+        title: tab.title || response.title || "",
+        url: tab.url || response.url || "",
+      });
+
       setPageData(normalized);
 
       await chrome.storage.local.set({
         extractedData: normalized,
       });
-    } catch (err) {
-      console.error("Failed to scan page:", err);
+    } catch (error) {
+      console.error("Failed to scan page:", error);
     } finally {
       setIsScanning(false);
     }
   };
 
-  const startInspector = async () => {
-    try {
-      const [tab] = await chrome.tabs.query({
-        active: true,
-        currentWindow: true,
-      });
-
-      if (!tab?.id) {
-        throw new Error("No active tab found");
-      }
-
-      await chrome.tabs.sendMessage(tab.id, {
-        action: "toggleInspection",
-        enabled: true,
-      });
-    } catch (err) {
-      console.error("Failed to activate inspector:", err);
-    }
-  };
-
   const tabs = [
     { id: "overview", label: "Overview", icon: FaChartPie },
-    { id: "inspect", label: "Inspect", icon: FaCrosshairs },
     { id: "colors", label: "Palette", icon: FaPalette },
     { id: "fonts", label: "Typography", icon: FaFont },
     { id: "images", label: "Assets", icon: FaImages },
     { id: "text", label: "Text", icon: FaFileLines },
-    { id: "settings", label: "Settings", icon: FaGear },
   ];
 
   const renderContent = () => {
@@ -157,28 +107,14 @@ function App() {
       case "overview":
         return <Overview pageData={pageData} />;
 
-      case "inspect":
-        return <CSSInspector selectedElement={selectedElement} />;
-
       case "colors":
-        return (
-          <ColorPalette
-            colors={pageData.colors ?? []
-            }
-            isLoading={isScanning}
-          />
-        );
+        return <ColorPalette colors={pageData.colors} isLoading={isScanning} />;
 
       case "fonts":
-        return (
-          <FontInspector
-            selectedElement={selectedElement}
-            pageData={pageData}
-          />
-        );
+        return <FontInspector pageData={pageData} />;
 
       case "images":
-        return <ImageExtractor images={pageData.images ?? []} />;
+        return <ImageExtractor images={pageData.images} />;
 
       case "text":
         return (
@@ -186,7 +122,7 @@ function App() {
             <textarea
               className="text-area"
               readOnly
-              value={pageData.text ?? ""}
+              value={pageData.text}
             />
           </div>
         );
@@ -206,16 +142,18 @@ function App() {
 
         <div className="header-actions">
           <button
-            className={`secondary-btn ${isScanning ? "scanning" : ""}`}
-            onClick={startInspector}
+            className="secondary-btn header-gear-btn"
+            onClick={() => setActiveTab("settings")}
+            aria-label="Open settings"
+            title="Settings"
           >
-            <FaCrosshairs size={14} />
-            Live Inspect
+            <FaGear size={14} />
           </button>
 
           <button
             className={`primary-btn ${isScanning ? "scanning" : ""}`}
             onClick={scanPage}
+            disabled={isScanning}
           >
             {isScanning ? "Scanning..." : "Scan Page"}
           </button>

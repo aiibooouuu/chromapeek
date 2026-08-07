@@ -85,7 +85,7 @@
 
 .popup-tabs {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   overflow: hidden;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -97,7 +97,7 @@
 
 .tab {
   width: 100%;
-  min-width: 0;
+  min-width: 105px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -141,8 +141,28 @@
 .popup-content {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 18px;
+  scrollbar-width: thin;
+  scrollbar-color: #232935 transparent;
   background: var(--bg);
+}
+
+.popup-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.popup-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.popup-content::-webkit-scrollbar-thumb {
+  background: #232935;
+  border-radius: 999px;
+}
+
+.popup-content::-webkit-scrollbar-thumb:hover {
+  background: #3a4252;
 }
 
 .component-section {

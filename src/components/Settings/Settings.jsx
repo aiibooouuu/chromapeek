@@ -35,51 +35,30 @@ const Settings = () => {
 
   return (
     <div className="settings">
-
       <div className="settings-header">
-
         <div>
-
           <h2>Settings</h2>
-
-          <p>
-            Customize your ChromePeek experience.
-          </p>
-
+          <p>Customize your ChromePeek experience.</p>
         </div>
-
       </div>
 
       <div className="settings-section">
-
         <div className="section-title">
-
           <Monitor size={16} />
-
           <span>Appearance</span>
-
         </div>
 
         <div className="setting-card">
-
           <div className="setting-info">
-
             <div className="setting-title">
-
               <Moon size={16} />
-
               <span>Theme</span>
-
             </div>
 
-            <p>
-              Choose the appearance of ChromePeek.
-            </p>
-
+            <p>Choose the appearance of ChromePeek.</p>
           </div>
 
           <div className="theme-selector">
-
             <button
               className={theme === "dark" ? "active" : ""}
               onClick={() => setTheme("dark")}
@@ -103,243 +82,136 @@ const Settings = () => {
               <Laptop size={15} />
               System
             </button>
-
           </div>
-
         </div>
-
       </div>
 
       <div className="settings-section">
-
         <div className="section-title">
-
           <Palette size={16} />
-
           <span>Color Format</span>
-
         </div>
 
         <div className="setting-card">
-
           <div className="setting-info">
-
             <div className="setting-title">
-
               <Palette size={16} />
-
               <span>Default Color Format</span>
-
             </div>
 
-            <p>
-              Preferred color format throughout the extension.
-            </p>
-
+            <p>Preferred color format throughout the extension.</p>
           </div>
 
-          <select
-            value={colorFormat}
-            onChange={(e) =>
-              setColorFormat(e.target.value)
-            }
-          >
-
+          <select value={colorFormat} onChange={(e) => setColorFormat(e.target.value)}>
             <option>HEX</option>
             <option>RGB</option>
             <option>HSL</option>
-
           </select>
-
         </div>
-
       </div>
 
       <div className="settings-section">
-
         <div className="section-title">
-
           <WandSparkles size={16} />
-
           <span>Preferences</span>
-
         </div>
 
         <div className="setting-card">
-
           <div className="setting-info">
-
             <div className="setting-title">
-
               <ScanSearch size={16} />
-
               <span>Auto Scan</span>
-
             </div>
 
-            <p>
-              Automatically scan the webpage after opening ChromePeek.
-            </p>
-
+            <p>Automatically scan the webpage after opening ChromePeek.</p>
           </div>
 
-          <Toggle
-            value={autoScan}
-            onChange={setAutoScan}
-          />
-
+          <Toggle value={autoScan} onChange={setAutoScan} />
         </div>
 
         <div className="setting-card">
-
           <div className="setting-info">
-
             <div className="setting-title">
-
               <WandSparkles size={16} />
-
               <span>Animations</span>
-
             </div>
 
-            <p>
-              Enable transitions and interface animations.
-            </p>
-
+            <p>Enable transitions and interface animations.</p>
           </div>
 
-          <Toggle
-            value={animations}
-            onChange={setAnimations}
-          />
-
+          <Toggle value={animations} onChange={setAnimations} />
         </div>
 
         <div className="setting-card">
-
           <div className="setting-info">
-
             <div className="setting-title">
-
               <Bell size={16} />
-
               <span>Notifications</span>
-
             </div>
 
-            <p>
-              Show copy and export success notifications.
-            </p>
-
+            <p>Show copy and export success notifications.</p>
           </div>
 
-          <Toggle
-            value={notifications}
-            onChange={setNotifications}
-          />
-
+          <Toggle value={notifications} onChange={setNotifications} />
         </div>
-
       </div>
 
       <div className="settings-section">
-
         <div className="section-title">
-
           <FileJson size={16} />
-
           <span>Export</span>
-
         </div>
 
         <div className="setting-card clickable">
-
           <div className="setting-info">
-
             <div className="setting-title">
-
               <FileJson size={16} />
-
               <span>Default Export Format</span>
-
             </div>
 
-            <p>
-              JSON report
-            </p>
-
+            <p>JSON report</p>
           </div>
 
           <ChevronRight size={18} />
-
         </div>
-
       </div>
 
       <div className="settings-section">
-
         <div className="section-title">
-
           <Info size={16} />
-
           <span>About</span>
-
         </div>
 
         <div className="about-card">
-
           <div className="logo-box">
-
             <Palette size={28} />
-
           </div>
 
           <div>
-
             <h3>ChromePeek</h3>
-
-            <span className="mono">
-              Version 1.0.0
-            </span>
-
-            <p>
-              A premium design inspection toolkit for modern web developers.
-            </p>
-
+            <span className="mono">Version 1.0.0</span>
+            <p>A premium design inspection toolkit for modern web developers.</p>
           </div>
-
         </div>
 
         <div className="setting-card clickable">
-
           <div className="setting-title">
-
             <GitBranch size={16} />
-
             <span>GitHub Repository</span>
-
           </div>
 
           <ChevronRight size={18} />
-
         </div>
 
         <div className="setting-card clickable">
-
           <div className="setting-title">
-
             <Shield size={16} />
-
             <span>Privacy Policy</span>
-
           </div>
 
           <ChevronRight size={18} />
-
         </div>
-
       </div>
-
     </div>
   );
 };

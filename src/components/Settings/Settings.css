@@ -159,7 +159,7 @@
   height: 24px;
   border-radius: 50%;
   background: white;
-  transition: .25s ease;
+  transition: 0.25s ease;
 }
 
 .toggle.active .toggle-thumb {
@@ -188,7 +188,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(201, 162, 75, .12);
+  background: rgba(201, 162, 75, 0.12);
   color: var(--gold);
   flex-shrink: 0;
 }
@@ -216,7 +216,7 @@
 
 .settings .setting-card,
 .settings .about-card {
-  animation: fadeIn .25s ease;
+  animation: fadeIn 0.25s ease;
 }
 
 @keyframes fadeIn {
@@ -232,7 +232,6 @@
 }
 
 @media (max-width: 480px) {
-
   .setting-card {
     flex-direction: column;
     align-items: flex-start;
