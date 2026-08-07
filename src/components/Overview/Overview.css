@@ -1,0 +1,270 @@
+.overview {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.overview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.overview-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.overview-header p {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.website-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.website-card:hover {
+  border-color: var(--gold);
+}
+
+.website-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(201, 162, 75, 0.12);
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.website-info {
+  flex: 1;
+}
+
+.website-info h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.website-info span {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 14px;
+}
+
+.overview-card {
+  padding: 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: var(--transition);
+}
+
+.overview-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.overview-card.teal:hover {
+  border-color: var(--teal);
+}
+
+.overview-card.gold:hover {
+  border-color: var(--gold);
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.overview-card.teal .card-top svg {
+  color: var(--teal);
+}
+
+.overview-card.gold .card-top svg {
+  color: var(--gold);
+}
+
+.overview-card h3 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.overview-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.section-title svg {
+  color: var(--teal);
+}
+
+.identity-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.identity-card:hover {
+  border-color: var(--gold);
+}
+
+.identity-card h4 {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.identity-card span {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.color-preview {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.audit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.audit-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: var(--transition);
+}
+
+.audit-item:hover {
+  transform: translateX(4px);
+}
+
+.audit-item span {
+  flex: 1;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.audit-item strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.audit-item.success svg,
+.audit-item.success strong {
+  color: var(--teal);
+}
+
+.audit-item.warning svg,
+.audit-item.warning strong {
+  color: var(--gold);
+}
+
+.overview-card,
+.website-card,
+.identity-card,
+.audit-item {
+  animation: fadeIn .25s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+
+  .overview-header {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .overview-header .secondary-btn {
+    width: 100%;
+  }
+
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .website-card,
+  .identity-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .audit-item {
+    flex-wrap: wrap;
+  }
+
+  .audit-item strong {
+    width: 100%;
+    padding-left: 28px;
+  }
+}

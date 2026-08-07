@@ -85,13 +85,18 @@
 
 .popup-tabs {
   display: flex;
-  align-items: center;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.popup-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tab {
-  flex: 1;
+  flex: 0 0 auto;
+  width: 90px;
   display: flex;
   flex-direction: column;
   align-items: center;

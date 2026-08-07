@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from "react";
 import {
-  Palette,
-  Type,
-  Image,
-  FileText,
-  ScanSearch,
-  Search,
-  RefreshCw,
-  Sparkles,
-} from "lucide-react";
+  FaCrosshairs,
+  FaPalette,
+  FaFont,
+  FaImages,
+  FaChartPie,
+  FaGear,
+} from "react-icons/fa6";
 
 import ColorPalette from "../components/ColorPalette/ColorPalette";
 import FontInspector from "../components/FontInspector/FontInspector";
 import CSSInspector from "../components/CSSInspector/CSSInspector";
 import ImageExtractor from "../components/ImageExtractor/ImageExtractor";
 import TextExtractor from "../components/TextExtractor/TextExtractor";
-
+import Overview from "../components/Overview/Overview";
+import Settings from "../components/Settings/Settings";
 import "./Popup.css";
 
 const Popup = () => {
@@ -107,33 +106,14 @@ const Popup = () => {
     }
   };
 
-  const tabs = [
-    {
-      id: "inspector",
-      label: "Inspector",
-      icon: ScanSearch,
-    },
-    {
-      id: "colors",
-      label: "Colors",
-      icon: Palette,
-    },
-    {
-      id: "fonts",
-      label: "Fonts",
-      icon: Type,
-    },
-    {
-      id: "images",
-      label: "Images",
-      icon: Image,
-    },
-    {
-      id: "text",
-      label: "Text",
-      icon: FileText,
-    },
-  ];
+const tabs = [
+  { id: "inspector", label: "Inspect", icon: FaCrosshairs },
+  { id: "colors", label: "Palette", icon: FaPalette },
+  { id: "fonts", label: "Typography", icon: FaFont },
+  { id: "images", label: "Assets", icon: FaImages },
+  { id: "overview", label: "Overview", icon: FaChartPie },
+  { id: "settings", label: "Settings", icon: FaGear },
+];
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -186,6 +166,18 @@ const Popup = () => {
           <TextExtractor
             textElements={pageData?.text || []}
           />
+        );
+      
+      case "overview":
+      return (
+        <Overview
+          pageData={pageData}
+        />
+      );
+
+      case "settings":
+        return (
+          <Settings />
         );
 
       default:
