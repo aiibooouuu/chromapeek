@@ -1,15 +1,8 @@
 import "./TextExtractor.css";
 import { FaRegCopy, FaFileLines } from "react-icons/fa6";
 
-const TextExtractor = ({ textElements = [] }) => {
-  const text = Array.isArray(textElements)
-    ? textElements.join("\n\n")
-    : typeof textElements === "string"
-      ? textElements
-      : "";
-
+const TextExtractor = ({ text }) => {
   const copyText = () => {
-    if (!text) return;
     navigator.clipboard.writeText(text);
   };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Search } from "lucide-react";
 import {
+  FaCrosshairs,
   FaPalette,
   FaFont,
   FaImages,
@@ -26,7 +26,44 @@ const Popup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
+  const getActiveTab = async () => {
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+
+    if (!tab?.id) {
+      throw new Error("No active tab found");
+    }
+
+    return tab;
+  };
+
+  const scanCurrentPage = async () => {
+    setIsLoading(true);
+
+    try {
+      const tab = await getActiveTab();
+
+      const response = await chrome.tabs.sendMessage(tab.id, {
+        type: "GET_PAGE_DATA",
+      });
+
+      if (response && !response.error) {
+        setPageData(response);
+      } else {
+        console.error("Failed to scan page:", response?.error);
+      }
+    } catch (error) {
+      console.error("Failed to scan page:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
+    scanCurrentPage();
+
     const listener = (message) => {
       if (message?.type === "ELEMENT_SELECTED") {
         setSelectedElement(message.data);
@@ -41,45 +78,11 @@ const Popup = () => {
     };
   }, []);
 
-  const scanCurrentPage = async () => {
-    setIsLoading(true);
-
-    try {
-      const [tab] = await chrome.tabs.query({
-        active: true,
-        currentWindow: true,
-      });
-
-      if (!tab?.id) {
-        throw new Error("No active tab found");
-      }
-
-      const response = await chrome.tabs.sendMessage(tab.id, {
-        type: "GET_PAGE_DATA",
-      });
-
-      if (response && !response.error) {
-        setPageData(response);
-      }
-    } catch (error) {
-      console.error("Failed to scan page:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const extractPageColors = async () => {
     setIsLoading(true);
 
     try {
-      const [tab] = await chrome.tabs.query({
-        active: true,
-        currentWindow: true,
-      });
-
-      if (!tab?.id) {
-        throw new Error("No active tab found");
-      }
+      const tab = await getActiveTab();
 
       const response = await chrome.tabs.sendMessage(tab.id, {
         type: "EXTRACT_COLORS",
@@ -90,6 +93,8 @@ const Popup = () => {
           ...(prev || {}),
           colors: response.colors,
         }));
+      } else {
+        console.error("Failed to extract colors:", response?.error);
       }
     } catch (error) {
       console.error("Failed to extract colors:", error);
@@ -100,14 +105,7 @@ const Popup = () => {
 
   const startInspector = async () => {
     try {
-      const [tab] = await chrome.tabs.query({
-        active: true,
-        currentWindow: true,
-      });
-
-      if (!tab?.id) {
-        throw new Error("No active tab found");
-      }
+      const tab = await getActiveTab();
 
       await chrome.tabs.sendMessage(tab.id, {
         type: "TOGGLE_INSPECTION",
@@ -163,7 +161,7 @@ const Popup = () => {
         );
 
       case "text":
-        return <TextExtractor textElements={pageData?.text || []} />;
+        return <TextExtractor text={pageData?.text || ""} />;
 
       case "settings":
         return <Settings />;
@@ -199,7 +197,7 @@ const Popup = () => {
         </button>
 
         <button className="secondary-btn" onClick={startInspector}>
-          <FaFileLines size={16} />
+          <FaCrosshairs size={16} />
           Live Inspect
         </button>
       </section>
@@ -228,7 +226,7 @@ const Popup = () => {
           renderTabContent()
         ) : (
           <div className="empty-state">
-            <Search size={42} strokeWidth={1.8} />
+            <FaMagnifyingGlass size={42} strokeWidth={1.8} />
             <h3>Ready to Inspect</h3>
             <p>
               Scan the current webpage to discover its colors, typography,
@@ -236,7 +234,7 @@ const Popup = () => {
             </p>
 
             <button className="primary-btn" onClick={scanCurrentPage}>
-              <Search size={16} />
+              <FaMagnifyingGlass size={16} />
               Scan Current Page
             </button>
           </div>
@@ -248,7 +246,7 @@ const Popup = () => {
           <span className="page-title">
             {pageData?.title
               ? pageData.title.length > 38
-                ? pageData.title.substring(0, 38) + "..."
+                ? `${pageData.title.substring(0, 38)}...`
                 : pageData.title
               : "No page scanned"}
           </span>

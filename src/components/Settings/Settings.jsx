@@ -17,13 +17,21 @@ import {
 
 import "./Settings.css";
 
+const Toggle = ({ value, onChange }) => (
+  <button
+    className={`toggle ${value ? "active" : ""}`}
+    onClick={() => onChange(!value)}
+  >
+    <span className="toggle-thumb" />
+  </button>
+);
+
 const Settings = () => {
   const [theme, setTheme] = useState("dark");
   const [colorFormat, setColorFormat] = useState("HEX");
   const [autoScan, setAutoScan] = useState(true);
   const [animations, setAnimations] = useState(true);
   const [notifications, setNotifications] = useState(true);
-
   const Toggle = ({ value, onChange }) => (
     <button
       className={`toggle ${value ? "active" : ""}`}

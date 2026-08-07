@@ -189,25 +189,17 @@ color: ${fontInfo.color};`
             </span>
           </div>
 
-          <button className="icon-button" onClick={copyFontStack}>
-            {copiedItem === "stack" ? <CheckCheck size={16} /> : <Copy size={16} />}
-          </button>
-        </div>
+          <div className="preview-actions">
+            <button className="secondary-btn" onClick={copyCSS}>
+              {copiedItem === "css" ? <CheckCheck size={14} /> : <Copy size={14} />}
+              Copy CSS
+            </button>
 
-        <div
-          className="font-preview"
-          style={{
-            fontFamily: fontInfo.fontFamily,
-            fontWeight: fontInfo.fontWeight,
-            fontStyle: fontInfo.fontStyle,
-            lineHeight: fontInfo.lineHeight,
-            letterSpacing: fontInfo.letterSpacing,
-            color: fontInfo.color,
-          }}
-        >
-          The quick brown fox jumps over the lazy dog
+            <button className="icon-button" onClick={copyFontStack}>
+              {copiedItem === "stack" ? <CheckCheck size={16} /> : <Copy size={16} />}
+            </button>
+          </div>
         </div>
-      </div>
 
       <div className="property-grid">
         {propertyCards.map(({ icon: Icon, label, value }) => (
@@ -251,6 +243,7 @@ color: ${fontInfo.color};`
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 };

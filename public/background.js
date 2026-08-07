@@ -1,70 +1,72 @@
-// ChromaPeek Background Service Worker
+// Background service worker for ChromaPeek
 
+// Log extension installation
 chrome.runtime.onInstalled.addListener(() => {
-  console.log("✅ ChromePeek installed");
+  console.log('ChromaPeek extension installed');
 });
 
-async function getActiveTab() {
-  const tabs = await chrome.tabs.query({
-    active: true,
-    currentWindow: true,
+// Resolve the tab the popup/user is currently looking at.
+function getActiveTab() {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs && tabs[0]) {
+        resolve(tabs[0]);
+      } else {
+        reject(new Error('No active tab found'));
+      }
+    });
   });
+}
 
-  if (!tabs.length) {
-    throw new Error("No active tab found.");
+// Forward a message to the content script running in the active tab.
+function forwardToActiveTab(request, sendResponse, errorMessage) {
+  getActiveTab()
+    .then((tab) => chrome.tabs.sendMessage(tab.id, request))
+    .then((response) => sendResponse(response))
+    .catch(() => sendResponse({ error: errorMessage }));
+}
+
+// Handle messages between popup and content scripts
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'extractData') {
+    forwardToActiveTab(request, sendResponse, 'No response from content script');
+    return true; // Keep message channel open for async response
   }
 
-  return tabs[0];
-}
+  switch (request.type) {
+    case 'GET_PAGE_DATA':
+      forwardToActiveTab(
+        request,
+        sendResponse,
+        'Could not reach the page. Try reloading it and scanning again.'
+      );
+      return true; // Keep channel open for async response
 
-async function sendToContent(message) {
-  const tab = await getActiveTab();
+    case 'UPDATE_CSS':
+      forwardToActiveTab(request, sendResponse, 'Failed to update CSS');
+      return true;
 
-  return chrome.tabs.sendMessage(tab.id, message);
-}
+    case 'EXTRACT_COLORS':
+      forwardToActiveTab(request, sendResponse, 'Failed to extract colors');
+      return true;
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  (async () => {
-    try {
-      if (request?.type === "DOWNLOAD_IMAGE" && request.imageUrl) {
-        await chrome.downloads.download({
+    case 'DOWNLOAD_IMAGE':
+      // Handle image download
+      if (request.imageUrl) {
+        chrome.downloads.download({
           url: request.imageUrl,
-          filename: `chromapeek-${Date.now()}.${request.format || "png"}`,
+          filename: `chromapeek-image-${Date.now()}.${request.format || 'png'}`,
         });
-
-        sendResponse({ success: true });
-        return;
       }
+      break;
+  }
 
-      sendResponse({
-        success: false,
-        error: `Unknown request type: ${request?.type}`,
-      });
-    } catch (error) {
-      console.error(error);
-      sendResponse({
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  })();
-
-  return true;
+  return false;
 });
 
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
-  if (changeInfo.status !== "complete") return;
-
-  await chrome.storage.local.remove(["pageData"]);
-
-  try {
-    await chrome.scripting.executeScript({
-      target: {
-        tabId
-      },
-      files: ["content.js"]
-    });
-  } catch (_) {
-    // Ignore restricted pages like chrome:// or the Web Store.
+// Clear any stale cached data when a tab finishes loading a new page.
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.status === 'complete') {
+    chrome.storage.local.remove(['extractedData']);
   }
 });

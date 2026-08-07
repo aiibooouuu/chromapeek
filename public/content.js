@@ -13,7 +13,6 @@ function normalizeColorValue(color) {
   }
 
   const rgbMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
-
   if (rgbMatch) {
     return `rgb(${rgbMatch[1]}, ${rgbMatch[2]}, ${rgbMatch[3]})`;
   }
@@ -25,9 +24,9 @@ function createOverlay() {
   overlay = document.createElement("div");
   overlay.id = "chromapeek-overlay";
   overlay.style.cssText = `
-    position: absolute;
+    position: fixed;
     pointer-events: none;
-    z-index: 999999;
+    z-index: 2147483647;
     border: 2px solid #f0ebd8;
     background: rgba(240, 235, 216, 0.1);
     display: none;
@@ -59,6 +58,7 @@ function extractColors() {
 
   elements.forEach((element) => {
     const styles = window.getComputedStyle(element);
+
     [
       styles.backgroundColor,
       styles.color,
@@ -103,33 +103,27 @@ function extractFonts() {
 }
 
 function extractImages() {
-  const images = [];
-  const imgElements = document.querySelectorAll("img");
-
-  imgElements.forEach((img) => {
-    if (img.src && img.src.startsWith("http")) {
-      images.push({
-        src: img.src,
-        alt: img.alt || "",
-        width: img.naturalWidth || img.width || 0,
-        height: img.naturalHeight || img.height || 0,
-      });
-    }
-  });
-
-  return images.slice(0, 20);
+  return Array.from(document.querySelectorAll("img"))
+    .filter((img) => img.src && img.src.startsWith("http"))
+    .slice(0, 20)
+    .map((img) => ({
+      src: img.src,
+      alt: img.alt || "",
+      width: img.naturalWidth || img.width || 0,
+      height: img.naturalHeight || img.height || 0,
+    }));
 }
 
 function extractText() {
-  const textElements = document.querySelectorAll(
-    "p, h1, h2, h3, h4, h5, h6, span, div, li, td"
-  );
+  const seen = new Set();
   const blocks = [];
+  const nodes = document.querySelectorAll("p, h1, h2, h3, h4, h5, h6, span, div, li, td");
 
-  textElements.forEach((element) => {
-    const elementText = element.textContent?.trim();
-    if (elementText && elementText.length > 10) {
-      blocks.push(elementText);
+  nodes.forEach((node) => {
+    const text = node.textContent?.trim();
+    if (text && text.length > 10 && !seen.has(text)) {
+      seen.add(text);
+      blocks.push(text);
     }
   });
 
@@ -183,18 +177,13 @@ function extractLinks() {
 }
 
 function extractHeadings() {
-  const headings = [];
-  const headingElements = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
-
-  headingElements.forEach((element) => {
-    headings.push({
+  return Array.from(document.querySelectorAll("h1, h2, h3, h4, h5, h6"))
+    .map((element) => ({
       level: element.tagName.toLowerCase(),
       text: element.textContent?.trim() || "",
       selector: getSelector(element),
-    });
-  });
-
-  return headings.slice(0, 50);
+    }))
+    .slice(0, 50);
 }
 
 function extractAccessibility() {
@@ -224,11 +213,10 @@ function extractCssSnapshot() {
 
 function buildPageData() {
   const title = document.title?.trim() || cleanHostname(window.location.hostname);
-  const url = window.location.href;
 
   return {
     title,
-    url,
+    url: window.location.href,
     colors: extractColors(),
     fonts: extractFonts(),
     images: extractImages(),
@@ -285,8 +273,8 @@ function handleMouseOver(event) {
   const rect = element.getBoundingClientRect();
 
   overlay.style.display = "block";
-  overlay.style.left = `${rect.left + window.scrollX}px`;
-  overlay.style.top = `${rect.top + window.scrollY}px`;
+  overlay.style.left = `${rect.left}px`;
+  overlay.style.top = `${rect.top}px`;
   overlay.style.width = `${rect.width}px`;
   overlay.style.height = `${rect.height}px`;
 }
@@ -330,7 +318,7 @@ function toggleInspection(enable) {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request?.type === "GET_PAGE_DATA" || request?.action === "extractData") {
+  if (request?.type === "GET_PAGE_DATA") {
     sendResponse(buildPageData());
     return true;
   }
@@ -340,7 +328,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
-  if (request?.type === "TOGGLE_INSPECTION" || request?.action === "toggleInspection") {
+  if (request?.type === "TOGGLE_INSPECTION") {
     toggleInspection(Boolean(request.enabled));
     sendResponse({ success: true });
     return true;
