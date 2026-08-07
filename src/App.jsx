@@ -1,228 +1,247 @@
-import { useState, useEffect } from 'react'
-import './App.css'
+import { useEffect, useState } from "react";
+import {
+  FaCrosshairs,
+  FaPalette,
+  FaFont,
+  FaImages,
+  FaFileLines,
+  FaChartPie,
+  FaGear,
+} from "react-icons/fa6";
+
+import "./App.css";
+
+import ColorPalette from "./components/ColorPalette/ColorPalette";
+import FontInspector from "./components/FontInspector/FontInspector";
+import CSSInspector from "./components/CSSInspector/CSSInspector";
+import ImageExtractor from "./components/ImageExtractor/ImageExtractor";
+import Overview from "./components/Overview/Overview";
+import Settings from "./components/Settings/Settings";
+
+const EMPTY_PAGE_DATA = {
+  colors: [],
+  fonts: [],
+  images: [],
+  text: "",
+  buttons: [],
+  links: [],
+  headings: [],
+  css: {},
+  accessibility: {},
+  title: "",
+  url: "",
+};
+
+const normalizePageData = (data = {}) => ({
+  title: typeof data.title === "string" ? data.title : "",
+  url: typeof data.url === "string" ? data.url : "",
+  colors: Array.isArray(data.colors) ? data.colors : [],
+  fonts: Array.isArray(data.fonts) ? data.fonts : [],
+  images: Array.isArray(data.images) ? data.images : [],
+  text: typeof data.text === "string" ? data.text : "",
+  buttons: Array.isArray(data.buttons) ? data.buttons : [],
+  links: Array.isArray(data.links) ? data.links : [],
+  headings: Array.isArray(data.headings) ? data.headings : [],
+  css: data.css && typeof data.css === "object" ? data.css : {},
+  accessibility:
+    data.accessibility && typeof data.accessibility === "object"
+      ? data.accessibility
+      : {},
+});
 
 function App() {
-  const [activeTab, setActiveTab] = useState('colors')
-  const [extractedData, setExtractedData] = useState({
-    colors: [],
-    fonts: [],
-    images: [],
-    text: ''
-  })
-  const [isScanning, setIsScanning] = useState(false)
+  const [activeTab, setActiveTab] = useState("overview");
+  const [pageData, setPageData] = useState(EMPTY_PAGE_DATA);
+  const [selectedElement, setSelectedElement] = useState(null);
+  const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
-    // Load any saved data when component mounts
-    loadExtractedData()
-  }, [])
+    loadPageData();
 
-  const loadExtractedData = async () => {
+    const listener = (message) => {
+      if (message?.type === "ELEMENT_SELECTED") {
+        setSelectedElement(message.data ?? null);
+        setActiveTab("inspect");
+      }
+
+      if (message?.type === "PAGE_DATA_UPDATED") {
+        setPageData(normalizePageData(message.data));
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(listener);
+
+    return () => {
+      chrome.runtime.onMessage.removeListener(listener);
+    };
+  }, []);
+
+  const loadPageData = async () => {
     try {
-      const result = await chrome.storage.local.get(['extractedData'])
+      const result = await chrome.storage.local.get(["extractedData"]);
+
       if (result.extractedData) {
-        setExtractedData(result.extractedData)
+        setPageData(normalizePageData(result.extractedData));
       }
-    } catch (error) {
-      console.error('Error loading data:', error)
+    } catch (err) {
+      console.error(err);
     }
-  }
+  };
 
-  const scanCurrentPage = async () => {
-    setIsScanning(true)
+  const scanPage = async () => {
+    setIsScanning(true);
+
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-      
-      // Inject content script and extract data
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ['content.js']
-      })
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
 
-      // Send message to content script to start extraction
-      const response = await chrome.tabs.sendMessage(tab.id, { action: 'extractData' })
-      
-      if (response) {
-        setExtractedData(response)
-        await chrome.storage.local.set({ extractedData: response })
+      if (!tab?.id) {
+        throw new Error("No active tab found");
       }
-    } catch (error) {
-      console.error('Error scanning page:', error)
+
+      const response = await chrome.tabs.sendMessage(tab.id, {
+        action: "extractData",
+      });
+
+      if (!response) {
+        throw new Error("No scan data returned from content script");
+      }
+
+      const normalized = normalizePageData(response);
+      setPageData(normalized);
+
+      await chrome.storage.local.set({
+        extractedData: normalized,
+      });
+    } catch (err) {
+      console.error("Failed to scan page:", err);
     } finally {
-      setIsScanning(false)
+      setIsScanning(false);
     }
-  }
+  };
 
-  const copyToClipboard = async (text) => {
+  const startInspector = async () => {
     try {
-      await navigator.clipboard.writeText(text)
-      // Could add a toast notification here
-    } catch (error) {
-      console.error('Failed to copy:', error)
-    }
-  }
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
 
-  const downloadAsJSON = () => {
-    const dataStr = JSON.stringify(extractedData, null, 2)
-    const blob = new Blob([dataStr], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'chromapeek-data.json'
-    a.click()
-    URL.revokeObjectURL(url)
-  }
+      if (!tab?.id) {
+        throw new Error("No active tab found");
+      }
+
+      await chrome.tabs.sendMessage(tab.id, {
+        action: "toggleInspection",
+        enabled: true,
+      });
+    } catch (err) {
+      console.error("Failed to activate inspector:", err);
+    }
+  };
+
+  const tabs = [
+    { id: "overview", label: "Overview", icon: FaChartPie },
+    { id: "inspect", label: "Inspect", icon: FaCrosshairs },
+    { id: "colors", label: "Palette", icon: FaPalette },
+    { id: "fonts", label: "Typography", icon: FaFont },
+    { id: "images", label: "Assets", icon: FaImages },
+    { id: "text", label: "Text", icon: FaFileLines },
+    { id: "settings", label: "Settings", icon: FaGear },
+  ];
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "overview":
+        return <Overview pageData={pageData} />;
+
+      case "inspect":
+        return <CSSInspector selectedElement={selectedElement} />;
+
+      case "colors":
+        return (
+          <ColorPalette
+            colors={pageData.colors ?? []
+            }
+            isLoading={isScanning}
+          />
+        );
+
+      case "fonts":
+        return (
+          <FontInspector
+            selectedElement={selectedElement}
+            pageData={pageData}
+          />
+        );
+
+      case "images":
+        return <ImageExtractor images={pageData.images ?? []} />;
+
+      case "text":
+        return (
+          <div className="text-panel">
+            <textarea
+              className="text-area"
+              readOnly
+              value={pageData.text ?? ""}
+            />
+          </div>
+        );
+
+      case "settings":
+        return <Settings />;
+
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="chromapeek-app">
       <header className="app-header">
-        <h1>ChromaPeek</h1>
-        <button 
-          className={`scan-btn ${isScanning ? 'scanning' : ''}`}
-          onClick={scanCurrentPage}
-          disabled={isScanning}
-        >
-          {isScanning ? 'Scanning...' : 'Scan Page'}
-        </button>
+        <h1>ChromePeek</h1>
+
+        <div className="header-actions">
+          <button
+            className={`secondary-btn ${isScanning ? "scanning" : ""}`}
+            onClick={startInspector}
+          >
+            <FaCrosshairs size={14} />
+            Live Inspect
+          </button>
+
+          <button
+            className={`primary-btn ${isScanning ? "scanning" : ""}`}
+            onClick={scanPage}
+          >
+            {isScanning ? "Scanning..." : "Scan Page"}
+          </button>
+        </div>
       </header>
 
       <nav className="tab-nav">
-        <button 
-          className={`tab-btn ${activeTab === 'colors' ? 'active' : ''}`}
-          onClick={() => setActiveTab('colors')}
-        >
-          Colors
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'fonts' ? 'active' : ''}`}
-          onClick={() => setActiveTab('fonts')}
-        >
-          Fonts
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'images' ? 'active' : ''}`}
-          onClick={() => setActiveTab('images')}
-        >
-          Images
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'text' ? 'active' : ''}`}
-          onClick={() => setActiveTab('text')}
-        >
-          Text
-        </button>
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+
+          return (
+            <button
+              key={tab.id}
+              className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <Icon size={15} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </nav>
 
-      <main className="app-content">
-        {activeTab === 'colors' && (
-          <div className="colors-panel">
-            <div className="panel-header">
-              <h2>Color Palette</h2>
-              <button className="export-btn" onClick={downloadAsJSON}>
-                Export
-              </button>
-            </div>
-            <div className="color-grid">
-              {extractedData.colors.length > 0 ? (
-                extractedData.colors.map((color, index) => (
-                  <div key={index} className="color-item">
-                    <div 
-                      className="color-swatch"
-                      style={{ backgroundColor: color.hex }}
-                      onClick={() => copyToClipboard(color.hex)}
-                    ></div>
-                    <div className="color-info">
-                      <span className="color-hex">{color.hex}</span>
-                      <span className="color-rgb">rgb({color.rgb.join(', ')})</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="empty-state">No colors extracted. Click "Scan Page" to start.</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'fonts' && (
-          <div className="fonts-panel">
-            <div className="panel-header">
-              <h2>Fonts</h2>
-            </div>
-            <div className="fonts-list">
-              {extractedData.fonts.length > 0 ? (
-                extractedData.fonts.map((font, index) => (
-                  <div key={index} className="font-item">
-                    <div className="font-family" style={{ fontFamily: font.family }}>
-                      {font.family}
-                    </div>
-                    <div className="font-details">
-                      <span>Size: {font.size}</span>
-                      <span>Weight: {font.weight}</span>
-                      <span>Style: {font.style}</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="empty-state">No fonts detected. Hover over elements to inspect fonts.</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'images' && (
-          <div className="images-panel">
-            <div className="panel-header">
-              <h2>Images</h2>
-            </div>
-            <div className="images-grid">
-              {extractedData.images.length > 0 ? (
-                extractedData.images.map((image, index) => (
-                  <div key={index} className="image-item">
-                    <img src={image.src} alt={image.alt || 'Extracted image'} />
-                    <div className="image-actions">
-                      <button onClick={() => window.open(image.src, '_blank')}>
-                        View
-                      </button>
-                      <button onClick={() => copyToClipboard(image.src)}>
-                        Copy URL
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="empty-state">No images found. Scan the page to extract images.</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'text' && (
-          <div className="text-panel">
-            <div className="panel-header">
-              <h2>Extracted Text</h2>
-              <button 
-                className="copy-btn"
-                onClick={() => copyToClipboard(extractedData.text)}
-              >
-                Copy All
-              </button>
-            </div>
-            <div className="text-content">
-              {extractedData.text ? (
-                <textarea 
-                  value={extractedData.text} 
-                  readOnly 
-                  className="text-area"
-                />
-              ) : (
-                <p className="empty-state">No text extracted. Select elements to extract text.</p>
-              )}
-            </div>
-          </div>
-        )}
-      </main>
+      <main className="app-content">{renderContent()}</main>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

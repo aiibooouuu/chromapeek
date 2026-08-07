@@ -12,7 +12,7 @@ import {
   Laptop,
   Info,
   ChevronRight,
-  Github,
+  GitBranch,
 } from "lucide-react";
 
 import "./Settings.css";
@@ -314,7 +314,7 @@ const Settings = () => {
 
           <div className="setting-title">
 
-            <Github size={16} />
+            <GitBranch size={16} />
 
             <span>GitHub Repository</span>
 
