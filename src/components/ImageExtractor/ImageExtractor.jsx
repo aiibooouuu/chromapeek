@@ -1,280 +1,593 @@
-import React, { useState } from 'react';
-import './ImageExtractor.css';
+import React, { useMemo, useState } from "react";
+import {
+  Image,
+  Grid2X2,
+  List,
+  Download,
+  Copy,
+  CheckCheck,
+  ExternalLink,
+  FileImage,
+  Filter,
+  Sparkles,
+} from "lucide-react";
 
-const ImageExtractor = ({ images = [], onDownload }) => {
-  const [selectedImages, setSelectedImages] = useState(new Set());
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
-  const [sortBy, setSortBy] = useState('size'); // 'size', 'name', 'type'
+import "./ImageExtractor.css";
 
-  const toggleImageSelection = (index) => {
-    const newSelected = new Set(selectedImages);
-    if (newSelected.has(index)) {
-      newSelected.delete(index);
-    } else {
-      newSelected.add(index);
-    }
-    setSelectedImages(newSelected);
-  };
+const ImageExtractor = ({
+  images = [],
+  onDownload,
+}) => {
+  const [selectedImages, setSelectedImages] =
+    useState(new Set());
 
-  const selectAllImages = () => {
-    if (selectedImages.size === images.length) {
-      setSelectedImages(new Set());
-    } else {
-      setSelectedImages(new Set(images.map((_, index) => index)));
-    }
-  };
+  const [viewMode, setViewMode] =
+    useState("grid");
 
-  const downloadSelected = () => {
-    selectedImages.forEach(index => {
-      const image = images[index];
-      if (onDownload) {
-        onDownload(image.src);
-      }
-    });
+  const [sortBy, setSortBy] =
+    useState("size");
+
+  const [copiedItem, setCopiedItem] =
+    useState(null);
+
+  const getImageType = (src) => {
+    return (
+      src
+        ?.split(".")
+        .pop()
+        ?.split("?")[0]
+        ?.toUpperCase() ||
+      "UNKNOWN"
+    );
   };
 
   const getImageSize = (image) => {
-    return image.width && image.height ? `${image.width}×${image.height}` : 'Unknown';
-  };
-
-  const getFileSize = (src) => {
-    // This would need to be implemented in the content script
-    // For now, return a placeholder
-    return 'Unknown';
-  };
-
-  const getImageType = (src) => {
-    const extension = src.split('.').pop()?.toLowerCase();
-    return extension || 'unknown';
-  };
-
-  const sortedImages = [...images].sort((a, b) => {
-    switch (sortBy) {
-      case 'size':
-        return (b.width * b.height) - (a.width * a.height);
-      case 'name':
-        return a.alt.localeCompare(b.alt);
-      case 'type':
-        return getImageType(a.src).localeCompare(getImageType(b.src));
-      default:
-        return 0;
+    if (
+      image.width &&
+      image.height
+    ) {
+      return `${image.width} × ${image.height}`;
     }
-  });
 
-  const copyImageInfo = (image) => {
-    const info = `Image: ${image.alt || 'Untitled'}
-URL: ${image.src}
-Size: ${getImageSize(image)}
-Type: ${getImageType(image.src)}`;
-    
-    navigator.clipboard.writeText(info);
+    return "Unknown";
   };
 
-  const exportImageList = () => {
-    const imageData = images.map(image => ({
-      src: image.src,
-      alt: image.alt,
-      width: image.width,
-      height: image.height,
-      type: getImageType(image.src),
-      size: getFileSize(image.src)
-    }));
+  const toggleSelection = (
+    index
+  ) => {
+    const next =
+      new Set(
+        selectedImages
+      );
 
-    const dataStr = JSON.stringify(imageData, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = `chromapeek-images-${Date.now()}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+    if (
+      next.has(index)
+    ) {
+      next.delete(index);
+    } else {
+      next.add(index);
+    }
+
+    setSelectedImages(
+      next
+    );
   };
 
-  if (images.length === 0) {
+  const selectAll =
+    () => {
+      if (
+        selectedImages.size ===
+        images.length
+      ) {
+        setSelectedImages(
+          new Set()
+        );
+      } else {
+        setSelectedImages(
+          new Set(
+            images.map(
+              (_, i) => i
+            )
+          )
+        );
+      }
+    };
+
+  const downloadSelected =
+    () => {
+      selectedImages.forEach(
+        (index) => {
+          if (
+            onDownload
+          ) {
+            onDownload(
+              images[index]
+                .src
+            );
+          }
+        }
+      );
+    };
+
+  const copyURL =
+    async (src) => {
+      await navigator.clipboard.writeText(
+        src
+      );
+
+      setCopiedItem(src);
+
+      setTimeout(() => {
+        setCopiedItem(
+          null
+        );
+      }, 1200);
+    };
+
+  const exportImages =
+    () => {
+      const data =
+        images.map(
+          (image) => ({
+            src: image.src,
+            alt: image.alt,
+            width:
+              image.width,
+            height:
+              image.height,
+            type:
+              getImageType(
+                image.src
+              ),
+          })
+        );
+
+      const blob =
+        new Blob(
+          [
+            JSON.stringify(
+              data,
+              null,
+              2
+            ),
+          ],
+          {
+            type: "application/json",
+          }
+        );
+
+      const url =
+        URL.createObjectURL(
+          blob
+        );
+
+      const link =
+        document.createElement(
+          "a"
+        );
+
+      link.href = url;
+
+      link.download = `chromapeek-images-${Date.now()}.json`;
+
+      link.click();
+
+      URL.revokeObjectURL(
+        url
+      );
+    };
+
+  const sortedImages =
+    useMemo(() => {
+      return [
+        ...images,
+      ].sort(
+        (a, b) => {
+          switch (
+            sortBy
+          ) {
+            case "size":
+              return (
+                b.width *
+                  b.height -
+                a.width *
+                  a.height
+              );
+
+            case "name":
+              return (
+                (
+                  a.alt ||
+                  ""
+                ).localeCompare(
+                  b.alt ||
+                    ""
+                )
+              );
+
+            case "type":
+              return getImageType(
+                a.src
+              ).localeCompare(
+                getImageType(
+                  b.src
+                )
+              );
+
+            default:
+              return 0;
+          }
+        }
+      );
+    }, [
+      images,
+      sortBy,
+    ]);
+
+  if (!images.length) {
     return (
       <div className="image-extractor">
-        <div className="component-title">
-          🖼️ Image Extractor
+
+        <div className="image-header">
+
+          <div>
+
+            <h2>
+              Assets
+            </h2>
+
+            <p>
+              Images
+              detected
+              from the
+              current
+              webpage.
+            </p>
+
+          </div>
+
         </div>
-        <div className="empty-state">
-          <div className="empty-state-icon">🖼️</div>
-          <h3>No images found</h3>
-          <p>This page doesn't contain any images, or they haven't been detected yet.</p>
+
+        <div className="empty-images">
+
+          <Image
+            size={46}
+          />
+
+          <h3>
+            No Images
+            Found
+          </h3>
+
+          <p>
+            Scan a page
+            containing
+            images to
+            build your
+            asset
+            gallery.
+          </p>
+
         </div>
+
       </div>
     );
   }
 
   return (
     <div className="image-extractor">
-      <div className="component-title">
-        🖼️ Image Extractor
-        <div className="header-controls">
-          <select 
-            value={sortBy} 
-            onChange={(e) => setSortBy(e.target.value)}
-            className="sort-select"
+
+      <div className="image-header">
+
+        <div>
+
+          <h2>
+            Assets
+          </h2>
+
+          <p>
+            {images.length} images
+            detected
+          </p>
+
+        </div>
+
+        <button
+          className="secondary-btn"
+          onClick={
+            exportImages
+          }
+        >
+
+          <Download
+            size={16}
+          />
+
+          Export
+
+        </button>
+
+      </div>
+
+      <div className="gallery-toolbar">
+
+        <div className="gallery-stats">
+
+          <span className="stat-chip">
+
+            <Image
+              size={14}
+            />
+
+            {images.length}
+
+          </span>
+
+          <span className="stat-chip">
+
+            <Sparkles
+              size={14}
+            />
+
+            {
+              selectedImages.size
+            } Selected
+
+          </span>
+
+        </div>
+
+        <div className="toolbar-actions">
+
+          <select
+            value={
+              sortBy
+            }
+            onChange={(
+              e
+            ) =>
+              setSortBy(
+                e.target
+                  .value
+              )
+            }
           >
-            <option value="size">Sort by Size</option>
-            <option value="name">Sort by Name</option>
-            <option value="type">Sort by Type</option>
+
+            <option value="size">
+              Largest
+            </option>
+
+            <option value="name">
+              Name
+            </option>
+
+            <option value="type">
+              Type
+            </option>
+
           </select>
-          <button 
-            className={`view-toggle ${viewMode === 'grid' ? 'active' : ''}`}
-            onClick={() => setViewMode('grid')}
-            title="Grid view"
+
+          <button
+            className={`icon-button ${
+              viewMode ===
+              "grid"
+                ? "active"
+                : ""
+            }`}
+            onClick={() =>
+              setViewMode(
+                "grid"
+              )
+            }
           >
-            ⊞
+
+            <Grid2X2
+              size={16}
+            />
+
           </button>
-          <button 
-            className={`view-toggle ${viewMode === 'list' ? 'active' : ''}`}
-            onClick={() => setViewMode('list')}
-            title="List view"
+
+          <button
+            className={`icon-button ${
+              viewMode ===
+              "list"
+                ? "active"
+                : ""
+            }`}
+            onClick={() =>
+              setViewMode(
+                "list"
+              )
+            }
           >
-            ☰
+
+            <List
+              size={16}
+            />
+
           </button>
+
         </div>
+
       </div>
 
-      <div className="extractor-stats">
-        <span className="stat">
-          {images.length} image{images.length !== 1 ? 's' : ''}
-        </span>
-        <span className="stat">
-          {selectedImages.size} selected
-        </span>
-      </div>
+            <div className={`images-gallery ${viewMode}`}>
 
-      <div className="extractor-actions">
-        <button 
-          className="btn outline small"
-          onClick={selectAllImages}
-        >
-          {selectedImages.size === images.length ? 'Deselect All' : 'Select All'}
-        </button>
-        <button 
-          className="btn small"
-          onClick={downloadSelected}
-          disabled={selectedImages.size === 0}
-        >
-          💾 Download Selected ({selectedImages.size})
-        </button>
-        <button 
-          className="btn secondary small"
-          onClick={exportImageList}
-        >
-          📋 Export List
-        </button>
-      </div>
-
-      <div className={`images-container ${viewMode}`}>
         {sortedImages.map((image, index) => (
-          <div 
-            key={index} 
-            className={`image-item ${selectedImages.has(index) ? 'selected' : ''}`}
+
+          <div
+            key={index}
+            className={`image-card ${
+              selectedImages.has(index)
+                ? "selected"
+                : ""
+            }`}
           >
+
             <div className="image-preview">
-              <img 
-                src={image.src} 
-                alt={image.alt || `Image ${index + 1}`}
+
+              <img
+                src={image.src}
+                alt={
+                  image.alt ||
+                  `Image ${index + 1}`
+                }
                 loading="lazy"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
-                }}
               />
-              <div className="image-placeholder" style={{ display: 'none' }}>
-                <span>🖼️</span>
-                <span>Failed to load</span>
-              </div>
+
               <div className="image-overlay">
-                <button 
-                  className="select-btn"
-                  onClick={() => toggleImageSelection(index)}
+
+                <button
+                  className={`icon-button ${
+                    selectedImages.has(index)
+                      ? "active"
+                      : ""
+                  }`}
+                  onClick={() =>
+                    toggleSelection(index)
+                  }
                 >
-                  {selectedImages.has(index) ? '✓' : '+'}
+
+                  {selectedImages.has(index) ? (
+                    <CheckCheck size={16} />
+                  ) : (
+                    <FileImage size={16} />
+                  )}
+
                 </button>
-                <button 
-                  className="download-btn"
-                  onClick={() => onDownload && onDownload(image.src)}
-                  title="Download image"
+
+                <button
+                  className="icon-button"
+                  onClick={() =>
+                    copyURL(image.src)
+                  }
                 >
-                  💾
+
+                  {copiedItem === image.src ? (
+                    <CheckCheck size={16} />
+                  ) : (
+                    <Copy size={16} />
+                  )}
+
                 </button>
-                <button 
-                  className="info-btn"
-                  onClick={() => copyImageInfo(image)}
-                  title="Copy image info"
+
+                <button
+                  className="icon-button"
+                  onClick={() =>
+                    onDownload &&
+                    onDownload(image.src)
+                  }
                 >
-                  ℹ️
+
+                  <Download size={16} />
+
                 </button>
+
+                <a
+                  href={image.src}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="icon-button"
+                >
+
+                  <ExternalLink size={16} />
+
+                </a>
+
               </div>
+
             </div>
-            
-            <div className="image-details">
-              <div className="image-title">
-                {image.alt || `Image ${index + 1}`}
-              </div>
+
+            <div className="image-content">
+
+              <h4>
+
+                {image.alt ||
+                  `Image ${index + 1}`}
+
+              </h4>
+
               <div className="image-meta">
-                <span className="meta-item">
-                  📐 {getImageSize(image)}
+
+                <span className="meta-chip">
+
+                  {getImageSize(image)}
+
                 </span>
-                <span className="meta-item">
-                  🏷️ {getImageType(image.src).toUpperCase()}
+
+                <span className="meta-chip type">
+
+                  {getImageType(image.src)}
+
                 </span>
+
               </div>
-              {viewMode === 'list' && (
-                <div className="image-url">
-                  <a 
-                    href={image.src} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    title={image.src}
-                  >
-                    {image.src.length > 50 ? image.src.substring(0, 50) + '...' : image.src}
-                  </a>
+
+              {viewMode === "list" && (
+
+                <div className="image-url mono">
+
+                  {image.src.length > 65
+                    ? image.src.slice(0, 65) + "..."
+                    : image.src}
+
                 </div>
+
               )}
+
             </div>
+
           </div>
+
         ))}
+
       </div>
 
-      <div className="bulk-actions">
-        <div className="action-group">
-          <h5>Bulk Actions</h5>
-          <div className="bulk-buttons">
-            <button 
-              className="btn outline small"
-              onClick={() => {
-                const jpgImages = images.filter(img => getImageType(img.src) === 'jpg' || getImageType(img.src) === 'jpeg');
-                setSelectedImages(new Set(jpgImages.map((_, idx) => images.indexOf(jpgImages[idx]))));
-              }}
-            >
-              Select JPG
-            </button>
-            <button 
-              className="btn outline small"
-              onClick={() => {
-                const pngImages = images.filter(img => getImageType(img.src) === 'png');
-                setSelectedImages(new Set(pngImages.map((_, idx) => images.indexOf(pngImages[idx]))));
-              }}
-            >
-              Select PNG
-            </button>
-            <button 
-              className="btn outline small"
-              onClick={() => {
-                const largeImages = images.filter(img => img.width > 500 || img.height > 500);
-                setSelectedImages(new Set(largeImages.map((_, idx) => images.indexOf(largeImages[idx]))));
-              }}
-            >
-              Select Large
-            </button>
-          </div>
+      <div className="bulk-panel">
+
+        <div className="bulk-header">
+
+          <Filter size={16} />
+
+          <span>
+            Bulk Actions
+          </span>
+
         </div>
+
+        <div className="bulk-actions">
+
+          <button
+            className="secondary-btn"
+            onClick={selectAll}
+          >
+
+            {selectedImages.size ===
+            images.length
+              ? "Deselect All"
+              : "Select All"}
+
+          </button>
+
+          <button
+            className="secondary-btn"
+            onClick={downloadSelected}
+            disabled={
+              selectedImages.size === 0
+            }
+          >
+
+            <Download size={16} />
+
+            Download (
+            {selectedImages.size})
+
+          </button>
+
+        </div>
+
       </div>
+
     </div>
   );
 };

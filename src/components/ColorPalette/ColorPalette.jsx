@@ -1,120 +1,308 @@
-import React, { useState } from 'react';
-import './ColorPalette.css';
+import React, { useMemo, useState } from "react";
+import {
+  Palette,
+  Copy,
+  Download,
+  RefreshCw,
+  Check,
+  Sparkles,
+} from "lucide-react";
 
-const ColorPalette = ({ colors = [], onExtractColors, isLoading }) => {
+import "./ColorPalette.css";
+
+const ColorPalette = ({
+  colors = [],
+  onExtractColors,
+  isLoading,
+}) => {
   const [copiedColor, setCopiedColor] = useState(null);
 
   const rgbToHex = (rgb) => {
-    const match = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    const match = rgb.match(
+      /rgb\((\d+),\s*(\d+),\s*(\d+)\)/
+    );
+
     if (!match) return rgb;
-    
+
     const [, r, g, b] = match;
-    return '#' + [r, g, b].map(x => {
-      const hex = parseInt(x).toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
-    }).join('');
+
+    return (
+      "#" +
+      [r, g, b]
+        .map((value) => {
+          const hex = parseInt(value).toString(16);
+          return hex.length === 1 ? `0${hex}` : hex;
+        })
+        .join("")
+        .toUpperCase()
+    );
   };
 
-  const copyToClipboard = async (color) => {
-    const hexColor = rgbToHex(color);
+  const palette = useMemo(() => {
+    return colors.map((color) => ({
+      rgb: color,
+      hex: rgbToHex(color),
+    }));
+  }, [colors]);
+
+  const dominantColor =
+    palette.length > 0 ? palette[0].hex : null;
+
+  const copyColor = async (color) => {
     try {
-      await navigator.clipboard.writeText(hexColor);
-      setCopiedColor(hexColor);
-      setTimeout(() => setCopiedColor(null), 1000);
-    } catch (err) {
-      console.error('Failed to copy color:', err);
+      await navigator.clipboard.writeText(color);
+
+      setCopiedColor(color);
+
+      setTimeout(() => {
+        setCopiedColor(null);
+      }, 1200);
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  const exportPalette = () => {
-    const palette = colors.map(color => ({
-      rgb: color,
-      hex: rgbToHex(color)
-    }));
-    
-    const dataStr = JSON.stringify(palette, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = `chromapeek-palette-${Date.now()}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+  const copyEntirePalette = async () => {
+    const output = palette
+      .map((color) => color.hex)
+      .join("\n");
+
+    await navigator.clipboard.writeText(output);
   };
 
-  if (colors.length === 0) {
+  const exportPalette = () => {
+    const json = JSON.stringify(
+      palette,
+      null,
+      2
+    );
+
+    const blob = new Blob([json], {
+      type: "application/json",
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+
+    link.download = `chromapeek-palette-${Date.now()}.json`;
+
+    link.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  if (!palette.length) {
     return (
       <div className="color-palette">
-        <div className="component-title">
-          🎨 Color Palette
+
+        <div className="palette-header">
+
+          <div>
+
+            <h2>Color Palette</h2>
+
+            <p>
+              Scan the current webpage to
+              extract its visual color
+              palette.
+            </p>
+
+          </div>
+
+          <div className="palette-count">
+
+            <Palette size={18} />
+
+            <span>0 Colors</span>
+
+          </div>
+
         </div>
-        <div className="empty-state">
-          <div className="empty-state-icon">🎨</div>
-          <h3>No colors extracted</h3>
-          <p>Click "Extract Colors" to analyze the current page's color palette.</p>
-          <button 
-            className="btn mt-3"
+
+        <div className="empty-palette">
+
+          <Palette
+            size={46}
+            strokeWidth={1.8}
+          />
+
+          <h3>No colors found</h3>
+
+          <p>
+            Click below to analyze the
+            current webpage.
+          </p>
+
+          <button
+            className="primary-btn"
             onClick={onExtractColors}
             disabled={isLoading}
           >
-            {isLoading ? 'Extracting...' : 'Extract Colors'}
+
+            <RefreshCw size={16} />
+
+            {isLoading
+              ? "Scanning..."
+              : "Extract Colors"}
+
           </button>
+
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="color-palette">
-      <div className="component-title">
-        🎨 Color Palette
-        <button 
-          className="btn small outline"
-          onClick={onExtractColors}
-          disabled={isLoading}
-        >
-          {isLoading ? 'Extracting...' : 'Re-extract'}
-        </button>
-      </div>
-      
-      <div className="color-grid">
-        {colors.map((color, index) => (
-          <div key={index} className="color-item">
-            <div 
-              className="color-swatch"
-              style={{ backgroundColor: color }}
-              onClick={() => copyToClipboard(color)}
-              title="Click to copy"
-            >
-              {copiedColor === rgbToHex(color) && (
-                <div className="copy-feedback">✓</div>
-              )}
+      return (
+        <div className="color-palette">
+
+          <div className="palette-header">
+
+            <div>
+
+              <h2>Color Palette</h2>
+
+              <p>
+                {palette.length} unique colors detected
+              </p>
+
             </div>
-            <div className="color-info">
-              <div className="color-hex">{rgbToHex(color)}</div>
-              <div className="color-rgb">{color}</div>
+
+            <div className="palette-count">
+
+              <Palette size={18} />
+
+              <span>{palette.length}</span>
+
             </div>
+
           </div>
-        ))}
-      </div>
-      
-      <div className="palette-actions">
-        <button className="btn secondary" onClick={exportPalette}>
-          💾 Export Palette
-        </button>
-        <button 
-          className="btn outline" 
-          onClick={() => {
-            const hexColors = colors.map(rgbToHex).join('\n');
-            navigator.clipboard.writeText(hexColors);
-          }}
-        >
-          📋 Copy All
-        </button>
-      </div>
-    </div>
-  );
+
+          <div className="palette-summary">
+
+            <div className="summary-card">
+
+              <span className="summary-label">
+                Primary Color
+              </span>
+
+              <div className="primary-color">
+
+                <div
+                  className="primary-swatch"
+                  style={{
+                    background: dominantColor,
+                  }}
+                />
+
+                <span className="mono">
+                  {dominantColor}
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div className="color-grid">
+
+            {palette.map((color, index) => (
+
+              <div
+                key={index}
+                className="color-card"
+              >
+
+                <div
+                  className="color-swatch"
+                  style={{
+                    backgroundColor: color.hex,
+                  }}
+                />
+
+                <div className="color-details">
+
+                  <span className="color-hex mono">
+                    {color.hex}
+                  </span>
+
+                  <span className="color-rgb mono">
+                    {color.rgb}
+                  </span>
+
+                </div>
+
+                <button
+                  className="icon-button"
+                  onClick={() =>
+                    copyColor(color.hex)
+                  }
+                >
+
+                  {copiedColor ===
+                  color.hex ? (
+                    <Check size={16} />
+                  ) : (
+                    <Copy size={16} />
+                  )}
+
+                </button>
+
+              </div>
+
+            ))}
+
+          </div>
+
+          <div className="palette-actions">
+
+            <button
+              className="secondary-btn"
+              onClick={copyEntirePalette}
+            >
+
+              <Copy size={16} />
+
+              Copy All
+
+            </button>
+
+            <button
+              className="secondary-btn"
+              onClick={exportPalette}
+            >
+
+              <Download size={16} />
+
+              Export
+
+            </button>
+
+            <button
+              className={`primary-btn ${
+                isLoading
+                  ? "scanning"
+                  : ""
+              }`}
+              onClick={onExtractColors}
+              disabled={isLoading}
+            >
+
+              <RefreshCw size={16} />
+
+              {isLoading
+                ? "Scanning..."
+                : "Scan Again"}
+
+            </button>
+
+          </div>
+
+        </div>
+      );
 };
 
 export default ColorPalette;
