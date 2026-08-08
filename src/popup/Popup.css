@@ -224,19 +224,79 @@
   box-shadow: var(--shadow-md);
 }
 
-/* Tabs — single row, never wraps */
 .popup-tabs {
+  position: relative;
+
   display: flex;
   flex-wrap: nowrap;
-  white-space: nowrap;
+
   overflow-x: auto;
   overflow-y: hidden;
+
   gap: 6px;
   padding: 10px 12px;
+
   background: var(--header);
   border-bottom: 1px solid var(--border);
+
   scrollbar-width: none;
   -ms-overflow-style: none;
+
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 14px,
+    black calc(100% - 14px),
+    transparent 100%
+  );
+
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 14px,
+    black calc(100% - 14px),
+    transparent 100%
+  );
+}
+/* Soft edge fades */
+
+.popup-tabs::before,
+.popup-tabs::after {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  bottom: 0;
+
+  width: 18px;
+
+  pointer-events: none;
+
+  z-index: 5;
+}
+
+.popup-tabs::before {
+  left: 0;
+
+  background: linear-gradient(
+    to right,
+    var(--header),
+    transparent
+  );
+}
+
+.popup-tabs::after {
+  right: 0;
+
+  background: linear-gradient(
+    to left,
+    var(--header),
+    transparent
+  );
+}
+.popup-tabs::-webkit-scrollbar {
+  display: none;
 }
 .popup-tabs::-webkit-scrollbar { display: none; height: 0; }
 
@@ -286,4 +346,26 @@
   border-top-color: var(--gold);
   border-radius: 50%;
   animation: spin 0.8s linear infinite; /* reuses your existing @keyframes spin */
+}
+
+
+.scanned-btn {
+  background: var(--surface);
+  color: var(--text);
+
+  border: 1px solid var(--border);
+
+  box-shadow: none;
+}
+
+.scanned-btn:hover {
+  border-color: var(--gold);
+
+  background: rgba(201,162,75,.08);
+
+  color: var(--gold);
+}
+
+.scanned-btn svg {
+  color: inherit;
 }

@@ -224,12 +224,20 @@ const Popup = () => {
 
       <section className="scan-section">
         <button
-          className={`primary-btn scan-btn ${isLoading ? "scanning" : ""}`}
+        className={`
+          ${pageData ? "secondary-btn scanned-btn" : "primary-btn"}
+          scan-btn
+          ${isLoading ? "scanning" : ""}
+        `}
           onClick={scanCurrentPage}
           disabled={isLoading}
         >
           <FaMagnifyingGlass size={18} />
-          {isLoading ? "Scanning Current Page..." : "Scan Current Page"}
+          {isLoading
+          ? "Scanning Current Page..."
+          : pageData
+              ? "Scan Again"
+              : "Scan Current Page"}
         </button>
 {/* 
         <button

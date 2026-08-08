@@ -109,6 +109,8 @@
   overflow: hidden;
   background: var(--bg);
   aspect-ratio: 16 / 10;
+  margin: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .image-preview img {

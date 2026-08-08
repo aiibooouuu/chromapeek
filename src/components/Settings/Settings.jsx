@@ -196,7 +196,7 @@ const Settings = () => {
           </div>
 
           <div>
-            <h3>ChromePeek</h3>
+            <h3>ChromaPeek</h3>
             <span className="mono">Version 1.0.0</span>
             <p>A premium design inspection toolkit for modern web developers.</p>
           </div>
