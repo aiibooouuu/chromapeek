@@ -88,7 +88,3 @@ ChromaPeek requests `activeTab`, `scripting`, `storage`, and `tabs`, plus host a
 ## Contributing
 
 Contributions are welcome! Feel free to submit issues or pull requests.
-
-## License
-
-MIT License — feel free to use this project however you'd like.
