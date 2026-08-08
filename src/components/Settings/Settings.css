@@ -52,6 +52,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   transition: var(--transition);
+  text-decoration: none;
 }
 
 .setting-card:hover {
@@ -91,79 +92,10 @@
   line-height: 1.6;
 }
 
-.theme-selector {
-  display: flex;
-  gap: 8px;
-}
-
-.theme-selector button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: var(--transition);
-  font-size: 12px;
-}
-
-.theme-selector button:hover {
-  border-color: var(--teal);
+.githubreponame {
+  margin: 6px 0 0;
   color: var(--teal);
-}
-
-.theme-selector button.active {
-  background: rgba(79, 216, 196, 0.12);
-  border-color: var(--teal);
-  color: var(--teal);
-}
-
-.setting-card select {
-  min-width: 110px;
-  padding: 8px 12px;
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  outline: none;
-  transition: var(--transition);
-}
-
-.setting-card select:focus {
-  border-color: var(--teal);
-}
-
-.toggle {
-  width: 54px;
-  height: 30px;
-  border: none;
-  border-radius: 999px;
-  background: var(--border);
-  position: relative;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.toggle.active {
-  background: var(--teal);
-}
-
-.toggle-thumb {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: white;
-  transition: 0.25s ease;
-}
-
-.toggle.active .toggle-thumb {
-  transform: translateX(24px);
+  font-size: 14px;
 }
 
 .about-card {
@@ -214,49 +146,14 @@
   font-size: 13px;
 }
 
-.settings .setting-card,
-.settings .about-card {
-  animation: fadeIn 0.25s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @media (max-width: 480px) {
   .setting-card {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .theme-selector {
-    width: 100%;
-    flex-wrap: wrap;
-  }
-
-  .theme-selector button {
-    flex: 1;
-    justify-content: center;
-  }
-
-  .setting-card select {
-    width: 100%;
-  }
-
   .about-card {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .toggle {
-    align-self: flex-end;
   }
 }
