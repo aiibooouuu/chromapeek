@@ -71,19 +71,19 @@ ChromaPeek requests `activeTab`, `scripting`, `storage`, and `tabs`, plus host a
 
 ### Overview
 
-![Overview](./screenshots/ss1.jpg)
+![Overview](./screenshots/ss1.jpeg)
 
 ### Typography
 
-![Typography](./screenshots/ss2.jpg)
+![Typography](./screenshots/ss2.jpeg)
 
 ### Assets
 
-![Assets](./screenshots/ss3.jpg)
+![Assets](./screenshots/ss3.jpeg)
 
 ### Settings
 
-![Settings](./screenshots/ss4.jpg)
+![Settings](./screenshots/ss4.jpeg)
 
 ## Contributing
 
